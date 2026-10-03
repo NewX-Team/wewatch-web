@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -25,11 +26,22 @@ class DashboardController extends Controller
     }
 
     /**
-     * Super Admin Dashboard view.
+     * Super Admin Dashboard view with real database metrics.
      */
     public function superAdmin(): View
     {
-        return view('dashboards.super-admin');
+        $users = User::orderBy('id', 'desc')->get();
+
+        $stats = [
+            'total_users' => User::count(),
+            'super_admins' => User::where('role', UserRole::SuperAdmin)->count(),
+            'creators' => User::where('role', UserRole::Creator)->count(),
+            'regular_users' => User::where('role', UserRole::User)->count(),
+            'active_users' => User::where('is_suspended', false)->count(),
+            'suspended_users' => User::where('is_suspended', true)->count(),
+        ];
+
+        return view('dashboards.super-admin', compact('users', 'stats'));
     }
 
     /**

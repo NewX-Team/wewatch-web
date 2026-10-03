@@ -43,6 +43,9 @@
               }
           }">
 
+        <!-- Floating Popup Toast Notification System -->
+        <x-toast-notification />
+
         <!-- Split Screen Cinema Layout: Left Video Player (Top-to-Bottom) + Right Movie Info -->
         <div class="flex flex-col lg:flex-row min-h-screen">
 
@@ -62,7 +65,7 @@
                 <!-- Top Navigation & Badges Bar (Over Video) -->
                 <div class="relative z-20 p-5 sm:p-7 flex items-center justify-between">
                     <!-- Back Button -->
-                    <a href="{{ route('user.dashboard') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800/80 backdrop-blur-md text-xs font-bold transition shadow-lg">
+                    <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800/80 backdrop-blur-md text-xs font-bold transition shadow-lg">
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                         <span>Back to Catalogue</span>
                     </a>

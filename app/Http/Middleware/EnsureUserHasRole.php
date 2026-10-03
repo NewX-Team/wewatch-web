@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserHasRole
@@ -20,6 +21,15 @@ class EnsureUserHasRole
 
         if (! $user) {
             return redirect()->route('login');
+        }
+
+        if ($user->isSuspended()) {
+            Auth::guard('web')->logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->with('error', 'AKUN DITANGGUHKAN: Akun Anda ('.$user->name.') sedang di-suspend oleh Administrator. Akses platform ditolak.');
         }
 
         $userRoleValue = $user->role instanceof UserRole ? $user->role->value : (string) $user->role;

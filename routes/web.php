@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MovieController;
@@ -16,13 +17,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:super_admin')->group(function () {
         Route::get('/admin/dashboard', [DashboardController::class, 'superAdmin'])->name('admin.dashboard');
+        Route::post('/admin/users', [AdminUserController::class, 'store'])->name('admin.users.store');
+        Route::patch('/admin/users/{user}/toggle-suspend', [AdminUserController::class, 'toggleSuspend'])->name('admin.users.toggle-suspend');
+        Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
     });
 
     Route::middleware('role:creator')->group(function () {
         Route::get('/creator/dashboard', [DashboardController::class, 'creator'])->name('creator.dashboard');
     });
 
-    Route::middleware('role:user')->group(function () {
+    Route::middleware('role:user,creator,super_admin')->group(function () {
         Route::get('/user/dashboard', [DashboardController::class, 'user'])->name('user.dashboard');
     });
 

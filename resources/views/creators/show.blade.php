@@ -15,6 +15,8 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased bg-zinc-950 text-zinc-100 selection:bg-red-600 selection:text-white min-h-screen relative overflow-x-hidden">
+        <!-- Floating Popup Toast Notification System -->
+        <x-toast-notification />
 
         <!-- Ambient Backdrop Light Spotlights -->
         <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-red-600/10 rounded-full blur-[160px] pointer-events-none z-0"></div>
@@ -29,9 +31,9 @@
 
             <!-- Brand & Back Button -->
             <div class="flex items-center gap-4">
-                <a href="{{ route('user.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition">
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                    <span>Back to Catalogue</span>
+                    <span>Back to Dashboard</span>
                 </a>
             </div>
 

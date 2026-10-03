@@ -17,13 +17,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Super Admin Demo Account
+        // 1. Super Admin Mutlak Utama Demo Account
         User::updateOrCreate(
             ['email' => 'admin@wewatch.test'],
             [
-                'name' => 'Alexandre Vance (Super Admin)',
+                'name' => 'Alexandre Vance (Super Admin Mutlak)',
                 'password' => Hash::make('password'),
                 'role' => UserRole::SuperAdmin,
+                'is_root_admin' => true,
                 'email_verified_at' => now(),
             ]
         );
@@ -35,17 +36,19 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Elena Rostova (Lead Creator)',
                 'password' => Hash::make('password'),
                 'role' => UserRole::Creator,
+                'is_root_admin' => false,
                 'email_verified_at' => now(),
             ]
         );
 
         // 3. Standard User Demo Account
         User::updateOrCreate(
-            ['email' => '   '],
+            ['email' => 'user@wewatch.test'],
             [
                 'name' => 'Marcus Chen (Pro Subscriber)',
                 'password' => Hash::make('password'),
                 'role' => UserRole::User,
+                'is_root_admin' => false,
                 'email_verified_at' => now(),
             ]
         );

@@ -15,6 +15,9 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased bg-slate-950 text-slate-100">
+        <!-- Floating Popup Toast Notification System -->
+        <x-toast-notification />
+
         <div class="min-h-screen bg-slate-950">
             @include('layouts.navigation')
 

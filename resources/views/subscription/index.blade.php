@@ -15,6 +15,8 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased bg-zinc-950 text-zinc-100 selection:bg-red-600 selection:text-white min-h-screen relative overflow-x-hidden">
+        <!-- Floating Popup Toast Notification System -->
+        <x-toast-notification />
 
         <!-- Ambient Backdrop Light Spotlights -->
         <div class="fixed top-0 left-1/4 w-[700px] h-[350px] bg-red-600/10 rounded-full blur-[160px] pointer-events-none z-0"></div>

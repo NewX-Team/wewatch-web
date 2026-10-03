@@ -27,6 +27,9 @@
           }"
           @scroll.window="scrollProgress = Math.min(100, Math.max(0, Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100)))">
 
+        <!-- Floating Popup Toast Notification System -->
+        <x-toast-notification />
+
         <!-- Ambient Spatial Backdrop Glow -->
         <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-red-600/10 rounded-full blur-[140px] pointer-events-none z-0"></div>
 
