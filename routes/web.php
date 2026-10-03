@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MovieController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:user')->group(function () {
         Route::get('/user/dashboard', [DashboardController::class, 'user'])->name('user.dashboard');
     });
+
+    Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
+    Route::get('/creators/{id}', [CreatorController::class, 'show'])->name('creators.show');
 });
 
 Route::middleware('auth')->group(function () {

@@ -20,7 +20,7 @@
         <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-600/10 rounded-full blur-[140px] pointer-events-none z-0"></div>
 
         <!-- Floating Centered Morphing Navbar -->
-        <nav x-data="{ isScrolled: false, profileOpen: false }"
+        <nav x-data="{ isScrolled: false }"
              @scroll.window="isScrolled = (window.scrollY > 30)"
              :class="isScrolled
                  ? 'max-w-3xl rounded-full py-2.5 px-6 bg-zinc-950/90 shadow-2xl border-zinc-800 backdrop-blur-2xl scale-95'
@@ -41,7 +41,7 @@
 
                 <!-- Navigation Links -->
                 <div class="flex items-center space-x-1 sm:space-x-2 text-xs font-bold">
-                    <a href="#" class="px-3 py-1.5 rounded-lg bg-red-600/15 text-red-400 border border-red-600/30 transition">
+                    <a href="{{ route('user.dashboard') }}" class="px-3 py-1.5 rounded-lg bg-red-600/15 text-red-400 border border-red-600/30 transition">
                         Home
                     </a>
                     <a href="#" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
@@ -103,26 +103,49 @@
                   selectedCategory: 'all'
               }">
 
-            <!-- SECTION 1: Most Favorite & Top Rated Titles (Infinite Auto-Scroll Carousel with Hover Pause) -->
+            <!-- SECTION 1: Most Favorite & Top Rated Titles (Seamless Infinite Auto-Scroll Carousel) -->
             <section class="space-y-4" x-data="{
                 isPaused: false,
+                accum: 0,
                 autoScroll() {
-                    if (!this.isPaused && this.$refs.favContainer) {
+                    if (!this.isPaused && this.$refs.favContainer && this.$refs.set1) {
                         const container = this.$refs.favContainer;
-                        container.scrollLeft += 0.6;
-                        if (container.scrollLeft >= (container.scrollWidth / 2)) {
-                            container.scrollLeft = 0;
+                        const setWidth = this.$refs.set1.offsetWidth;
+                        if (setWidth > 0) {
+                            this.accum += 0.8;
+                            if (this.accum >= 1) {
+                                const movePx = Math.floor(this.accum);
+                                this.accum -= movePx;
+                                container.scrollLeft += movePx;
+                                if (container.scrollLeft >= setWidth) {
+                                    container.scrollLeft -= setWidth;
+                                }
+                            }
                         }
                     }
                     requestAnimationFrame(() => this.autoScroll());
                 },
                 scrollLeft() {
                     this.isPaused = true;
-                    this.$refs.favContainer.scrollBy({ left: -240, behavior: 'smooth' });
+                    const container = this.$refs.favContainer;
+                    const setWidth = this.$refs.set1 ? this.$refs.set1.offsetWidth : 1000;
+                    container.scrollBy({ left: -260, behavior: 'smooth' });
+                    setTimeout(() => {
+                        if (container.scrollLeft <= 0) {
+                            container.scrollLeft += setWidth;
+                        }
+                    }, 350);
                 },
                 scrollRight() {
                     this.isPaused = true;
-                    this.$refs.favContainer.scrollBy({ left: 240, behavior: 'smooth' });
+                    const container = this.$refs.favContainer;
+                    const setWidth = this.$refs.set1 ? this.$refs.set1.offsetWidth : 1000;
+                    container.scrollBy({ left: 260, behavior: 'smooth' });
+                    setTimeout(() => {
+                        if (container.scrollLeft >= setWidth) {
+                            container.scrollLeft -= setWidth;
+                        }
+                    }, 350);
                 }
             }" x-init="requestAnimationFrame(() => autoScroll())">
                 <div class="flex items-center justify-between">
@@ -143,7 +166,7 @@
                         </h2>
                     </div>
 
-                    <!-- Horizontal Scroll Arrows & Status -->
+                    <!-- Horizontal Scroll Arrows -->
                     <div class="flex items-center gap-1.5">
                         <button @click="scrollLeft()" title="Scroll Left" class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white flex items-center justify-center transition shadow-sm">
                             <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
@@ -158,240 +181,363 @@
                 <div x-ref="favContainer"
                      @mouseenter="isPaused = true"
                      @mouseleave="isPaused = false"
-                     class="flex gap-4 overflow-x-auto custom-scrollbar pt-1.5 pb-3 px-0.5 cursor-grab active:cursor-grabbing select-none">
+                     class="flex overflow-x-auto custom-scrollbar pt-1.5 pb-3 px-0.5 cursor-grab active:cursor-grabbing select-none">
 
-                    <!-- ORIGINAL SET (1-4) -->
-                    <!-- Fav Card 1 -->
-                    <div class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md">
-                        <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
-                            <img src="{{ asset('images/hero_banner.jpg') }}" alt="Cyberpunk Shadows" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-red-600 text-white font-extrabold text-[9px] shadow">
-                                #1 FAVORITE
-                            </div>
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
-                                99% Match
-                            </div>
-                            <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                                <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
-                                    <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <!-- CARD SET 1 (x-ref="set1") -->
+                    <div x-ref="set1" class="flex gap-4 pr-4 shrink-0">
+                        <!-- Card 1 -->
+                        <a href="{{ route('movies.show', 'cyberpunk-shadows') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/hero_banner.jpg') }}" alt="Cyberpunk Shadows" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-red-600 text-white font-extrabold text-[9px] shadow">
+                                    #1 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    99% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="p-3">
-                            <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Sci-Fi Series</span>
-                            <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Cyberpunk Shadows</h3>
-                            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
-                                <span>2026 • S1</span>
-                                <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                    <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    <span>4.9</span>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Sci-Fi Series</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Cyberpunk Shadows</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • S1</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.9</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
+
+                        <!-- Card 2 -->
+                        <a href="{{ route('movies.show', 'midnight-drift') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_action.jpg') }}" alt="Midnight Drift" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #2 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    97% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Action Thriller</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Midnight Drift</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • Movie</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.9</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Card 3 -->
+                        <a href="{{ route('movies.show', 'deep-ocean-abyss') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_documentary.jpg') }}" alt="Deep Ocean Abyss 4K" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #3 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    98% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-sky-500 uppercase tracking-wide">Documentary</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Deep Ocean Abyss 4K</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • Doc</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>5.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Card 4 -->
+                        <a href="{{ route('movies.show', 'realm-of-eldoria') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_fantasy.jpg') }}" alt="Realm of Eldoria" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #4 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    95% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Fantasy Epic</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Realm of Eldoria</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • S1</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.8</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
 
-                    <!-- Fav Card 2 -->
-                    <div class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md">
-                        <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
-                            <img src="{{ asset('images/poster_action.jpg') }}" alt="Midnight Drift" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
-                                #2 FAVORITE
-                            </div>
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
-                                97% Match
-                            </div>
-                            <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                                <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
-                                    <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <!-- CARD SET 2 (Duplicate 1 for Seamless Infinite Transition) -->
+                    <div class="flex gap-4 pr-4 shrink-0">
+                        <!-- Card 1 -->
+                        <a href="{{ route('movies.show', 'cyberpunk-shadows') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/hero_banner.jpg') }}" alt="Cyberpunk Shadows" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-red-600 text-white font-extrabold text-[9px] shadow">
+                                    #1 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    99% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="p-3">
-                            <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Action Thriller</span>
-                            <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Midnight Drift</h3>
-                            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
-                                <span>2026 • Movie</span>
-                                <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                    <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    <span>4.9</span>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Sci-Fi Series</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Cyberpunk Shadows</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • S1</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.9</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
+
+                        <!-- Card 2 -->
+                        <a href="{{ route('movies.show', 'midnight-drift') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_action.jpg') }}" alt="Midnight Drift" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #2 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    97% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Action Thriller</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Midnight Drift</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • Movie</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.9</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Card 3 -->
+                        <a href="{{ route('movies.show', 'deep-ocean-abyss') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_documentary.jpg') }}" alt="Deep Ocean Abyss 4K" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #3 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    98% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-sky-500 uppercase tracking-wide">Documentary</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Deep Ocean Abyss 4K</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • Doc</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>5.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Card 4 -->
+                        <a href="{{ route('movies.show', 'realm-of-eldoria') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_fantasy.jpg') }}" alt="Realm of Eldoria" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #4 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    95% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Fantasy Epic</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Realm of Eldoria</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • S1</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.8</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
 
-                    <!-- Fav Card 3 -->
-                    <div class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md">
-                        <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
-                            <img src="{{ asset('images/poster_documentary.jpg') }}" alt="Deep Ocean Abyss 4K" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
-                                #3 FAVORITE
-                            </div>
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
-                                98% Match
-                            </div>
-                            <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                                <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
-                                    <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <!-- CARD SET 3 (Duplicate 2 for Extra Scroll Runway on Ultra-Wide Monitors) -->
+                    <div class="flex gap-4 pr-4 shrink-0">
+                        <!-- Card 1 -->
+                        <a href="{{ route('movies.show', 'cyberpunk-shadows') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/hero_banner.jpg') }}" alt="Cyberpunk Shadows" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-red-600 text-white font-extrabold text-[9px] shadow">
+                                    #1 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    99% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="p-3">
-                            <span class="text-[10px] font-bold text-sky-500 uppercase tracking-wide">Documentary</span>
-                            <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Deep Ocean Abyss 4K</h3>
-                            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
-                                <span>2026 • Doc</span>
-                                <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                    <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    <span>5.0</span>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Sci-Fi Series</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Cyberpunk Shadows</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • S1</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.9</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </a>
 
-                    <!-- Fav Card 4 -->
-                    <div class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md">
-                        <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
-                            <img src="{{ asset('images/poster_fantasy.jpg') }}" alt="Realm of Eldoria" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
-                                #4 FAVORITE
-                            </div>
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
-                                95% Match
-                            </div>
-                            <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                                <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
-                                    <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <!-- Card 2 -->
+                        <a href="{{ route('movies.show', 'midnight-drift') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_action.jpg') }}" alt="Midnight Drift" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #2 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    97% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="p-3">
-                            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Fantasy Epic</span>
-                            <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Realm of Eldoria</h3>
-                            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
-                                <span>2026 • S1</span>
-                                <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                    <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    <span>4.8</span>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Action Thriller</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Midnight Drift</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • Movie</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.9</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </a>
 
-                    <!-- DUPLICATE SET FOR SEAMLESS INFINITE LOOP (5-8) -->
-                    <!-- Fav Card 1 Duplicate -->
-                    <div class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md">
-                        <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
-                            <img src="{{ asset('images/hero_banner.jpg') }}" alt="Cyberpunk Shadows" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-red-600 text-white font-extrabold text-[9px] shadow">
-                                #1 FAVORITE
-                            </div>
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
-                                99% Match
-                            </div>
-                            <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                                <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
-                                    <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <!-- Card 3 -->
+                        <a href="{{ route('movies.show', 'deep-ocean-abyss') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_documentary.jpg') }}" alt="Deep Ocean Abyss 4K" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #3 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    98% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="p-3">
-                            <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Sci-Fi Series</span>
-                            <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Cyberpunk Shadows</h3>
-                            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
-                                <span>2026 • S1</span>
-                                <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                    <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    <span>4.9</span>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-sky-500 uppercase tracking-wide">Documentary</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Deep Ocean Abyss 4K</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • Doc</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>5.0</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </a>
 
-                    <!-- Fav Card 2 Duplicate -->
-                    <div class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md">
-                        <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
-                            <img src="{{ asset('images/poster_action.jpg') }}" alt="Midnight Drift" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
-                                #2 FAVORITE
-                            </div>
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
-                                97% Match
-                            </div>
-                            <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                                <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
-                                    <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <!-- Card 4 -->
+                        <a href="{{ route('movies.show', 'realm-of-eldoria') }}" class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md block">
+                            <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
+                                <img src="{{ asset('images/poster_fantasy.jpg') }}" alt="Realm of Eldoria" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
+                                    #4 FAVORITE
+                                </div>
+                                <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
+                                    95% Match
+                                </div>
+                                <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                    <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
+                                        <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="p-3">
-                            <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">Action Thriller</span>
-                            <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Midnight Drift</h3>
-                            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
-                                <span>2026 • Movie</span>
-                                <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                    <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    <span>4.9</span>
+                            <div class="p-3">
+                                <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Fantasy Epic</span>
+                                <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Realm of Eldoria</h3>
+                                <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
+                                    <span>2026 • S1</span>
+                                    <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                        <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                        <span>4.8</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Fav Card 3 Duplicate -->
-                    <div class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md">
-                        <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
-                            <img src="{{ asset('images/poster_documentary.jpg') }}" alt="Deep Ocean Abyss 4K" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
-                                #3 FAVORITE
-                            </div>
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
-                                98% Match
-                            </div>
-                            <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                                <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
-                                    <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-3">
-                            <span class="text-[10px] font-bold text-sky-500 uppercase tracking-wide">Documentary</span>
-                            <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Deep Ocean Abyss 4K</h3>
-                            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
-                                <span>2026 • Doc</span>
-                                <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                    <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    <span>5.0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Fav Card 4 Duplicate -->
-                    <div class="w-52 sm:w-60 shrink-0 bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-md">
-                        <div class="aspect-[16/9] relative overflow-hidden bg-zinc-800">
-                            <img src="{{ asset('images/poster_fantasy.jpg') }}" alt="Realm of Eldoria" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-zinc-950/90 text-zinc-200 border border-zinc-700 font-extrabold text-[9px] shadow">
-                                #4 FAVORITE
-                            </div>
-                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-emerald-400 font-mono text-[9px] font-bold border border-zinc-800">
-                                95% Match
-                            </div>
-                            <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
-                                <div class="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md transform scale-75 group-hover:scale-100 transition duration-300">
-                                    <svg class="w-4 h-4 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-3">
-                            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wide">Fantasy Epic</span>
-                            <h3 class="font-bold text-white text-xs mt-0.5 truncate group-hover:text-red-400 transition">Realm of Eldoria</h3>
-                            <div class="flex items-center justify-between text-[11px] text-zinc-400 mt-2 border-t border-zinc-800/80 pt-2">
-                                <span>2026 • S1</span>
-                                <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                    <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    <span>4.8</span>
-                                </div>
-                            </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
             </section>
@@ -426,7 +572,7 @@
                 <!-- Horizontal Scroll Track (Compact Poster Size w-36/w-40) -->
                 <div x-ref="newContainer" class="flex gap-4 overflow-x-auto snap-x custom-scrollbar pt-1.5 pb-3 px-0.5">
                     <!-- New Card 1 -->
-                    <div class="w-36 sm:w-40 shrink-0 snap-start bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 shadow-md">
+                    <a href="{{ route('movies.show', 'realm-of-eldoria') }}" class="w-36 sm:w-40 shrink-0 snap-start bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 shadow-md block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/poster_fantasy.jpg') }}" alt="Realm of Eldoria" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-emerald-600 text-white font-extrabold text-[8px] tracking-wider shadow">
@@ -446,10 +592,10 @@
                                 <span class="font-mono text-zinc-300">54m</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- New Card 2 -->
-                    <div class="w-36 sm:w-40 shrink-0 snap-start bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 shadow-md">
+                    <a href="{{ route('movies.show', 'deep-ocean-abyss') }}" class="w-36 sm:w-40 shrink-0 snap-start bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 shadow-md block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/poster_documentary.jpg') }}" alt="Deep Ocean Abyss" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-emerald-600 text-white font-extrabold text-[8px] tracking-wider shadow">
@@ -469,10 +615,10 @@
                                 <span class="font-mono text-zinc-300">1h 24m</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- New Card 3 -->
-                    <div class="w-36 sm:w-40 shrink-0 snap-start bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 shadow-md">
+                    <a href="{{ route('movies.show', 'cyberpunk-shadows') }}" class="w-36 sm:w-40 shrink-0 snap-start bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 shadow-md block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/hero_banner.jpg') }}" alt="Cyberpunk Shadows" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-red-600 text-white font-extrabold text-[8px] tracking-wider shadow">
@@ -492,10 +638,10 @@
                                 <span class="font-mono text-zinc-300">48m</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- New Card 4 -->
-                    <div class="w-36 sm:w-40 shrink-0 snap-start bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 shadow-md">
+                    <a href="{{ route('movies.show', 'midnight-drift') }}" class="w-36 sm:w-40 shrink-0 snap-start bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 shadow-md block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/poster_action.jpg') }}" alt="Midnight Drift" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-emerald-600 text-white font-extrabold text-[8px] tracking-wider shadow">
@@ -515,11 +661,11 @@
                                 <span class="font-mono text-zinc-300">2h 05m</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </section>
 
-            <!-- SECTION 3: Explore All Movies Catalogue (Vertical Scroll Grid - 5-6 Columns High Density) -->
+            <!-- SECTION 3: Explore All Movies Catalogue (Vertical Scroll Grid - 6 Columns High Density) -->
             <section class="space-y-5">
                 <div class="flex flex-col md:flex-row md:items-end justify-between gap-3 border-b border-zinc-800/80 pb-4">
                     <div>
@@ -552,7 +698,7 @@
                 <!-- Vertical Scroll Grid Catalogue (Higher Column Density grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6) -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     <!-- Catalogue Grid Item 1 -->
-                    <div x-show="selectedCategory === 'all' || selectedCategory === 'scifi'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm">
+                    <a href="{{ route('movies.show', 'cyberpunk-shadows') }}" x-show="selectedCategory === 'all' || selectedCategory === 'scifi'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/hero_banner.jpg') }}" alt="Cyberpunk Shadows" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-red-600 text-white font-extrabold text-[8px]">
@@ -575,10 +721,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- Catalogue Grid Item 2 -->
-                    <div x-show="selectedCategory === 'all' || selectedCategory === 'action'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm">
+                    <a href="{{ route('movies.show', 'midnight-drift') }}" x-show="selectedCategory === 'all' || selectedCategory === 'action'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/poster_action.jpg') }}" alt="Midnight Drift" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-zinc-950/90 border border-zinc-700 text-zinc-200 font-extrabold text-[8px]">
@@ -601,10 +747,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- Catalogue Grid Item 3 -->
-                    <div x-show="selectedCategory === 'all' || selectedCategory === 'doc'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm">
+                    <a href="{{ route('movies.show', 'deep-ocean-abyss') }}" x-show="selectedCategory === 'all' || selectedCategory === 'doc'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/poster_documentary.jpg') }}" alt="Deep Ocean Abyss" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-red-600 text-white font-extrabold text-[8px]">
@@ -627,10 +773,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- Catalogue Grid Item 4 -->
-                    <div x-show="selectedCategory === 'all' || selectedCategory === 'fantasy'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm">
+                    <a href="{{ route('movies.show', 'realm-of-eldoria') }}" x-show="selectedCategory === 'all' || selectedCategory === 'fantasy'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/poster_fantasy.jpg') }}" alt="Realm of Eldoria" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-zinc-950/90 border border-zinc-700 text-zinc-200 font-extrabold text-[8px]">
@@ -653,10 +799,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- Catalogue Grid Item 5 -->
-                    <div x-show="selectedCategory === 'all' || selectedCategory === 'scifi'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm">
+                    <a href="{{ route('movies.show', 'cyberpunk-shadows') }}" x-show="selectedCategory === 'all' || selectedCategory === 'scifi'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/hero_banner.jpg') }}" alt="Neon Horizon" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-red-600 text-white font-extrabold text-[8px]">
@@ -679,10 +825,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     <!-- Catalogue Grid Item 6 -->
-                    <div x-show="selectedCategory === 'all' || selectedCategory === 'action'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm">
+                    <a href="{{ route('movies.show', 'midnight-drift') }}" x-show="selectedCategory === 'all' || selectedCategory === 'action'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-xl overflow-hidden group hover:border-red-600/60 transition duration-300 hover:-translate-y-1 shadow-sm block">
                         <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
                             <img src="{{ asset('images/poster_action.jpg') }}" alt="Vengeance Protocol" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-zinc-950/90 border border-zinc-700 text-zinc-200 font-extrabold text-[8px]">
@@ -705,7 +851,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </section>
         </main>
