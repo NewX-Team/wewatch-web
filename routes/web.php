@@ -4,6 +4,7 @@ use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -27,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
     Route::get('/creators/{id}', [CreatorController::class, 'show'])->name('creators.show');
+    Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
 });
 
 Route::middleware('auth')->group(function () {

@@ -55,11 +55,12 @@
 
             <!-- Right: Tier Badge Box, Searchbar & Profile -->
             <div class="flex items-center space-x-3 shrink-0">
-                <!-- Account Tier Box (Free Version Template) -->
-                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 shadow-inner">
+                <!-- Account Tier Box (Clickable to Upgrade Membership Page) -->
+                <a href="{{ route('subscription.index') }}" title="Upgrade Membership Plan" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-red-600/60 transition shadow-inner group cursor-pointer">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[11px] font-black tracking-wider uppercase text-zinc-200">FREE</span>
-                </div>
+                    <span class="text-[11px] font-black tracking-wider uppercase text-zinc-200 group-hover:text-red-400 transition">FREE</span>
+                    <span class="text-[9px] font-bold text-red-500 bg-red-600/15 border border-red-600/30 px-1.5 py-0.5 rounded group-hover:bg-red-600 group-hover:text-white transition">UPGRADE</span>
+                </a>
 
                 <!-- Integrated Searchbar -->
                 <div class="relative hidden md:block">
