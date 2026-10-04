@@ -140,8 +140,65 @@
                     <p class="text-xs text-zinc-400 mt-1">Nikmati tayangan film 4K UHD &amp; fitur studio sinematik.</p>
                 </div>
 
-                <form method="POST" action="{{ route('register') }}" class="space-y-3">
+                <form method="POST" action="{{ route('register') }}" class="space-y-3" x-data="{ selectedRole: '{{ old('role', 'user') }}' }">
                     @csrf
+
+                    <!-- Account Type Role Selector -->
+                    <div>
+                        <x-input-label :value="__('Daftar Sebagai')" class="text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5" />
+                        <div class="grid grid-cols-2 gap-2">
+                            <!-- User Role Card -->
+                            <label @click="selectedRole = 'user'"
+                                   class="relative rounded-xl p-2.5 cursor-pointer border transition-all duration-200 flex flex-col justify-between"
+                                   :class="selectedRole === 'user' ? 'bg-red-600/15 border-red-500 shadow-md shadow-red-600/10' : 'bg-zinc-950/80 border-zinc-800/90 hover:border-zinc-700/80 hover:bg-zinc-950'">
+                                <input type="radio" name="role" value="user" x-model="selectedRole" class="sr-only">
+                                
+                                <div class="flex items-center justify-between mb-1">
+                                    <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                                         :class="selectedRole === 'user' ? 'bg-red-600 text-white shadow-sm' : 'bg-zinc-900 text-zinc-400 border border-zinc-800'">
+                                        <svg class="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                                    </div>
+                                    <div class="w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors"
+                                         :class="selectedRole === 'user' ? 'border-red-500 bg-red-600' : 'border-zinc-700 bg-zinc-900'">
+                                        <template x-if="selectedRole === 'user'">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-xs font-black text-white">Penonton</h4>
+                                    <p class="text-[10px] text-zinc-400 leading-tight mt-0.5">Streaming film 4K UHD</p>
+                                </div>
+                            </label>
+
+                            <!-- Creator Role Card -->
+                            <label @click="selectedRole = 'creator'"
+                                   class="relative rounded-xl p-2.5 cursor-pointer border transition-all duration-200 flex flex-col justify-between"
+                                   :class="selectedRole === 'creator' ? 'bg-amber-500/15 border-amber-500 shadow-md shadow-amber-500/10' : 'bg-zinc-950/80 border-zinc-800/90 hover:border-zinc-700/80 hover:bg-zinc-950'">
+                                <input type="radio" name="role" value="creator" x-model="selectedRole" class="sr-only">
+                                
+                                <div class="flex items-center justify-between mb-1">
+                                    <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                                         :class="selectedRole === 'creator' ? 'bg-amber-500 text-zinc-950 shadow-sm' : 'bg-zinc-900 text-zinc-400 border border-zinc-800'">
+                                        <svg class="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4zM14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2z"/></svg>
+                                    </div>
+                                    <div class="w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors"
+                                         :class="selectedRole === 'creator' ? 'border-amber-500 bg-amber-500' : 'border-zinc-700 bg-zinc-900'">
+                                        <template x-if="selectedRole === 'creator'">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-zinc-950"></div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-xs font-black text-white">Kreator Studio</h4>
+                                    <p class="text-[10px] text-zinc-400 leading-tight mt-0.5">Upload film &amp; analitik</p>
+                                </div>
+                            </label>
+                        </div>
+                        <x-input-error :messages="$errors->get('role')" class="mt-1 text-xs text-red-400" />
+                    </div>
 
                     <!-- Name -->
                     <div>
