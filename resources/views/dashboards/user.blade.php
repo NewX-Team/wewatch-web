@@ -109,6 +109,106 @@
                   selectedCategory: 'all'
               }">
 
+            @if(isset($movies) && $movies->isEmpty())
+                <!-- DARK SPATIAL USER CATALOGUE EMPTY STATE (When creators haven't published movies yet) -->
+                <div class="max-w-3xl mx-auto my-12 bg-zinc-900/80 border border-zinc-800/90 rounded-3xl p-8 sm:p-14 text-center shadow-2xl relative overflow-hidden backdrop-blur-2xl space-y-6">
+                    <!-- Ambient Spotlight Glows -->
+                    <div class="absolute -top-24 -right-24 w-60 h-60 bg-red-600/15 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -bottom-24 -left-24 w-60 h-60 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <!-- Center Movie Reel Halo -->
+                    <div class="relative z-10 w-24 h-24 rounded-full bg-zinc-950/80 border-2 border-red-600/40 flex items-center justify-center mx-auto shadow-2xl shadow-red-600/20 group">
+                        <div class="absolute inset-0 rounded-full bg-red-600/20 blur-md animate-pulse"></div>
+                        <svg class="w-10 h-10 text-red-500 fill-current relative z-10 transform group-hover:scale-110 transition duration-300" viewBox="0 0 24 24">
+                            <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                        </svg>
+                    </div>
+
+                    <div class="relative z-10 space-y-3">
+                        <span class="px-3 py-1 rounded-full bg-red-600/15 border border-red-600/30 text-red-400 font-mono text-[10px] font-bold uppercase tracking-widest">
+                            KATALOG SEMENTARA KOSONG
+                        </span>
+                        <h2 class="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                            Belum Ada Film yang Diterbitkan Kreator
+                        </h2>
+                        <p class="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto leading-relaxed">
+                            Kreator Studio belum memasukkan atau mengunggah film sinematik di platform WeWatch. Jika Anda seorang Kreator, masuk ke Creator Studio untuk menerbitkan karya tayangan pertama Anda!
+                        </p>
+                    </div>
+
+                    <div class="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                        @if(Auth::user()->isCreator() || Auth::user()->isSuperAdmin())
+                            <a href="{{ route('creator.dashboard') }}" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs tracking-wide shadow-lg shadow-red-600/30 transition transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                <span>Buka Creator Studio & Unggah Film</span>
+                            </a>
+                        @else
+                            <a href="{{ route('subscription.index') }}" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-zinc-950 font-black text-xs tracking-wide shadow-lg shadow-amber-500/20 transition transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                <span>Upgrade Membership & Daftar Kreator</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            @if(isset($movies) && $movies->isNotEmpty())
+                <!-- PUBLISHED CREATOR MOVIES SECTION -->
+                <section class="space-y-4">
+                    <div class="flex items-center justify-between border-b border-zinc-800/80 pb-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                                <span class="text-[11px] font-bold text-red-500 uppercase tracking-wider">Karya Terbaru Kreator Studio</span>
+                            </div>
+                            <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight mt-0.5">
+                                Film & Serial Rilis Diterbitkan Kreator
+                            </h2>
+                        </div>
+                        <span class="text-xs text-zinc-400 font-mono">{{ $movies->count() }} Film Rilis</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                        @foreach($movies as $movie)
+                            <a href="{{ route('movies.show', $movie->slug ?: $movie->id) }}" class="bg-zinc-900/90 border border-zinc-800/90 rounded-2xl overflow-hidden group hover:border-red-600/60 hover:scale-[1.02] transition duration-300 shadow-xl block">
+                                <div class="aspect-[2/3] relative overflow-hidden bg-zinc-800">
+                                    <img src="{{ asset($movie->poster_url ?: 'images/hero_banner.jpg') }}" alt="{{ $movie->title }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                    
+                                    <!-- Status Badge -->
+                                    <div class="absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase shadow tracking-wider {{ $movie->isOngoing() ? 'bg-amber-500 text-zinc-950' : 'bg-emerald-600 text-white' }}">
+                                        {{ $movie->status_label }}
+                                    </div>
+
+                                    <!-- Tier Badge -->
+                                    <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-red-400 font-mono text-[9px] font-bold border border-zinc-800 uppercase">
+                                        {{ $movie->access_tier }}
+                                    </div>
+
+                                    <!-- Play Hover Overlay -->
+                                    <div class="absolute inset-0 bg-zinc-950/40 opacity-0 group-hover:opacity-100 transition duration-300 flex items-center justify-center">
+                                        <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition duration-300">
+                                            <svg class="w-5 h-5 fill-current translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="p-3.5 space-y-1.5">
+                                    <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">{{ $movie->genre }}</span>
+                                    <h3 class="font-bold text-white text-xs truncate group-hover:text-red-400 transition">{{ $movie->title }}</h3>
+                                    <div class="flex items-center justify-between text-[10px] text-zinc-400 border-t border-zinc-800/80 pt-2 mt-2">
+                                        <span>{{ $movie->episodes->count() }} Episode</span>
+                                        <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                            <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                            <span>{{ $movie->rating }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
             <!-- SECTION 1: Most Favorite & Top Rated Titles (Seamless Infinite Auto-Scroll Carousel) -->
             <section class="space-y-4" x-data="{
                 isPaused: false,

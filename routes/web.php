@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\CreatorController;
+use App\Http\Controllers\CreatorMovieController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\MovieController;
@@ -29,8 +30,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/admin/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
     });
 
-    Route::middleware('role:creator')->group(function () {
+    Route::middleware('role:creator,super_admin')->group(function () {
         Route::get('/creator/dashboard', [DashboardController::class, 'creator'])->name('creator.dashboard');
+        Route::post('/creator/movies', [CreatorMovieController::class, 'store'])->name('creator.movies.store');
+        Route::post('/creator/movies/{movie}/episodes', [CreatorMovieController::class, 'addEpisode'])->name('creator.movies.episodes.store');
+        Route::patch('/creator/movies/{movie}/toggle-status', [CreatorMovieController::class, 'toggleStatus'])->name('creator.movies.toggle-status');
+        Route::delete('/creator/movies/{movie}', [CreatorMovieController::class, 'destroy'])->name('creator.movies.destroy');
     });
 
     Route::middleware('role:user,creator,super_admin')->group(function () {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\Announcement;
+use App\Models\Movie;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,15 +50,17 @@ class DashboardController extends Controller
     }
 
     /**
-     * Creator Studio Dashboard view.
+     * Creator Studio Dashboard view with creator's published movies.
      */
-    public function creator(): View
+    public function creator(Request $request): View
     {
-        return view('dashboards.creator');
+        $movies = $request->user()->movies()->with('episodes')->orderBy('id', 'desc')->get();
+
+        return view('dashboards.creator', compact('movies'));
     }
 
     /**
-     * Standard User Dashboard view.
+     * Standard User Dashboard view with creator published movies.
      */
     public function user(Request $request): View
     {
@@ -80,6 +83,11 @@ class DashboardController extends Controller
             $announcements = collect();
         }
 
-        return view('dashboards.user', compact('announcements'));
+        $movies = Movie::with(['creator', 'episodes'])
+            ->where('is_published', true)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return view('dashboards.user', compact('announcements', 'movies'));
     }
 }

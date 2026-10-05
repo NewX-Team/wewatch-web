@@ -27,7 +27,7 @@ test('creator user is redirected to creator dashboard and can access it', functi
 
     $creatorResponse = $this->actingAs($creator)->get('/creator/dashboard');
     $creatorResponse->assertStatus(200);
-    $creatorResponse->assertSee('Creator Hub');
+    $creatorResponse->assertSee('CREATOR STUDIO HUB');
 });
 
 test('standard user is redirected to user dashboard and can access it', function () {
