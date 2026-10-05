@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MovieController;
@@ -20,6 +21,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/admin/users', [AdminUserController::class, 'store'])->name('admin.users.store');
         Route::patch('/admin/users/{user}/toggle-suspend', [AdminUserController::class, 'toggleSuspend'])->name('admin.users.toggle-suspend');
         Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+
+        // Announcement / Broadcast Management
+        Route::post('/admin/announcements', [AnnouncementController::class, 'store'])->name('admin.announcements.store');
+        Route::patch('/admin/announcements/{announcement}/toggle', [AnnouncementController::class, 'toggleStatus'])->name('admin.announcements.toggle');
+        Route::delete('/admin/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('admin.announcements.destroy');
     });
 
     Route::middleware('role:creator')->group(function () {

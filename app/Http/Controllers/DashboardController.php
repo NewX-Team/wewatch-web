@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\Announcement;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,7 @@ class DashboardController extends Controller
     public function superAdmin(): View
     {
         $users = User::orderBy('id', 'desc')->get();
+        $announcements = Announcement::orderBy('id', 'desc')->get();
 
         $stats = [
             'total_users' => User::count(),
@@ -39,9 +41,11 @@ class DashboardController extends Controller
             'regular_users' => User::where('role', UserRole::User)->count(),
             'active_users' => User::where('is_suspended', false)->count(),
             'suspended_users' => User::where('is_suspended', true)->count(),
+            'total_announcements' => Announcement::count(),
+            'active_announcements' => Announcement::where('is_active', true)->count(),
         ];
 
-        return view('dashboards.super-admin', compact('users', 'stats'));
+        return view('dashboards.super-admin', compact('users', 'stats', 'announcements'));
     }
 
     /**
@@ -55,8 +59,27 @@ class DashboardController extends Controller
     /**
      * Standard User Dashboard view.
      */
-    public function user(): View
+    public function user(Request $request): View
     {
-        return view('dashboards.user');
+        $user = $request->user();
+        $roleValue = $user->role instanceof UserRole ? $user->role->value : (string) $user->role;
+
+        $currentSessionId = $request->session()->getId();
+        $hasBeenServedThisSession = $request->session()->get('announcements_served_session_id') === $currentSessionId;
+
+        if (! $hasBeenServedThisSession) {
+            // First time landing on dashboard in this login session
+            $request->session()->put('announcements_served_session_id', $currentSessionId);
+
+            $announcements = Announcement::where('is_active', true)
+                ->whereIn('target_role', ['all', $roleValue])
+                ->orderBy('id', 'asc')
+                ->get();
+        } else {
+            // Already served in this login session (refreshed page, navigated from movie/other pages)
+            $announcements = collect();
+        }
+
+        return view('dashboards.user', compact('announcements'));
     }
 }

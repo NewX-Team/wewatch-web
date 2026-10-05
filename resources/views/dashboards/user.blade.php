@@ -18,6 +18,9 @@
         <!-- Floating Popup Toast Notification System -->
         <x-toast-notification />
 
+        <!-- Sequential Announcement Broadcast Popup System -->
+        <x-announcement-popup :announcements="$announcements ?? []" />
+
         <!-- Ambient Backdrop Light Spotlights -->
         <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-600/10 rounded-full blur-[140px] pointer-events-none z-0"></div>
 
