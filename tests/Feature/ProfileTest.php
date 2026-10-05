@@ -33,6 +33,35 @@ test('profile information can be updated', function () {
     $this->assertNull($user->email_verified_at);
 });
 
+test('creator channel profile information can be updated', function () {
+    $creator = User::factory()->creator()->create();
+
+    $response = $this
+        ->actingAs($creator)
+        ->patch('/profile', [
+            'name' => 'Aerell Gaming Studio',
+            'email' => $creator->email,
+            'handle' => '@aerellgaming',
+            'bio' => 'Channel Gaming & Cinema Aerell Gaming',
+            'tagline' => 'Gaming 4K UHD & Cinematic',
+            'avatar_url' => 'images/aerell_avatar.png',
+            'banner_url' => 'images/aerell_banner.jpg',
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $creator->refresh();
+
+    $this->assertSame('Aerell Gaming Studio', $creator->name);
+    $this->assertSame('@aerellgaming', $creator->handle);
+    $this->assertSame('Channel Gaming & Cinema Aerell Gaming', $creator->bio);
+    $this->assertSame('Gaming 4K UHD & Cinematic', $creator->tagline);
+    $this->assertSame('images/aerell_avatar.png', $creator->avatar_url);
+    $this->assertSame('images/aerell_banner.jpg', $creator->banner_url);
+});
+
 test('email verification status is unchanged when the email address is unchanged', function () {
     $user = User::factory()->create();
 

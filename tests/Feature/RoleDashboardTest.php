@@ -39,7 +39,7 @@ test('standard user is redirected to user dashboard and can access it', function
     $userResponse = $this->actingAs($user)->get('/user/dashboard');
     $userResponse->assertStatus(200);
     $userResponse->assertSee('Subscribed');
-    $userResponse->assertSee('Most Favorite');
+    $userResponse->assertSee('WEWATCH');
 });
 
 test('standard user cannot access super admin or creator dashboards', function () {

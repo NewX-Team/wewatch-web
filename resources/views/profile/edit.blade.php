@@ -44,7 +44,7 @@
             <!-- Right: Tier / Role Badge & Profile -->
             <div class="flex items-center space-x-3 shrink-0">
                 @if($user->isCreator())
-                    <a href="{{ route('creators.show', 'neotokyo-studios') }}" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition group">
+                    <a href="{{ route('creators.show', $user->name) }}" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition group">
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                         <span class="text-[11px] font-black tracking-wider uppercase text-amber-300">CREATOR HUB</span>
                         <span class="text-[9px] font-bold text-amber-200 bg-amber-600/30 border border-amber-500/40 px-1.5 py-0.5 rounded">LIHAT CHANNEL</span>
@@ -79,9 +79,11 @@
                       },
                       // Creator State with LocalStorage Persistence & Safe JS Escaping
                       studioName: {{ Js::from($user->name) }},
-                      handle: localStorage.getItem('creator_handle') || ('@' + {{ Js::from(Str::slug($user->name, '_')) }} + '_films'),
-                      tagline: localStorage.getItem('creator_tagline') || 'Produksi Film Independen Quality 4K UHD & Epik Cinema',
-                      bio: localStorage.getItem('creator_bio') || 'Studio film independen yang memproduksi film pendek berkualitas sinematik 4K UHD. Spesialis genre Sci-Fi, Action, dan Thriller.',
+                      handle: {{ Js::from($user->handle) }} || ('@' + {{ Js::from(Str::slug($user->name, '_')) }} + '_films'),
+                      tagline: {{ Js::from($user->tagline) }} || 'Produksi Film Sinematik Quality 4K UHD',
+                      bio: {{ Js::from($user->bio) }} || 'Studio film independen yang memproduksi film berkualitas sinematik.',
+                      avatarUrl: {{ Js::from($user->avatar_url) }} || '',
+                      bannerUrl: {{ Js::from($user->banner_url) }} || '',
                       primaryGenre: localStorage.getItem('creator_genre') || 'Sci-Fi',
                       // Payout State
                       payoutMethod: localStorage.getItem('creator_payoutMethod') || 'bank',
@@ -267,37 +269,45 @@
 
                                 <!-- Banner Header Upload Zone -->
                                 <div class="space-y-2">
-                                    <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Banner Sampul Channel (Cover Art)</label>
-                                    <div class="relative w-full h-40 rounded-2xl bg-gradient-to-r from-zinc-900 via-amber-950/30 to-zinc-900 border border-zinc-800 overflow-hidden group flex items-center justify-center">
-                                        <div class="absolute inset-0 bg-cover bg-center opacity-40 group-hover:scale-105 transition duration-700" style="background-image: url('https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=80');"></div>
-                                        <div class="relative z-10 text-center space-y-1 bg-zinc-950/70 p-4 rounded-xl border border-zinc-800/80 backdrop-blur-md">
-                                            <svg class="w-6 h-6 text-amber-400 mx-auto fill-current" viewBox="0 0 24 24"><path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/></svg>
-                                            <span class="text-xs font-bold text-white block">Unggah Cover Banner Studio</span>
-                                            <span class="text-[10px] text-zinc-400 block">Rekomendasi resolusi 1280 x 360 px (Format JPG, PNG max 5MB)</span>
+                                    <label for="banner_url" class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Banner Sampul Channel (Cover Art Image / URL)</label>
+                                    <div class="relative w-full h-44 rounded-2xl bg-gradient-to-r from-zinc-900 via-amber-950/30 to-zinc-900 border border-zinc-800 overflow-hidden group flex items-center justify-center p-4">
+                                        <div class="absolute inset-0 bg-cover bg-center opacity-40 group-hover:scale-105 transition duration-700" :style="bannerUrl ? ('background-image: url(\'' + bannerUrl + '\')') : 'background-image: url(\'{{ asset('images/hero_banner.jpg') }}\')'"></div>
+                                        <div class="relative z-10 text-center space-y-2 bg-zinc-950/80 p-4 rounded-xl border border-zinc-800/80 backdrop-blur-md max-w-lg w-full">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-5 h-5 text-amber-400 shrink-0 fill-current" viewBox="0 0 24 24"><path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"/></svg>
+                                                <input type="text" id="banner_url" name="banner_url" x-model="bannerUrl" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl text-xs text-zinc-100 py-2 px-3 focus:outline-none focus:border-amber-500 transition font-mono" placeholder="Masukkan URL atau Path Banner Sampul (misal: images/hero_banner.jpg)">
+                                            </div>
+                                            <span class="text-[10px] text-zinc-400 block">Rekomendasi resolusi 1280 x 360 px (Kosongkan untuk banner default sinematik)</span>
                                         </div>
                                     </div>
+                                    <x-input-error class="mt-1" :messages="$errors->get('banner_url')" />
                                 </div>
 
                                 <!-- Logo Avatar & Identity Fields -->
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-3">
-                                        <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Logo Studio / Avatar Profil</label>
+                                        <label for="avatar_url" class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Logo Studio / Avatar Profil URL</label>
                                         <div class="flex items-center gap-4">
-                                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 text-zinc-950 font-black text-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 border-2 border-amber-400/50 shrink-0">
-                                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-600 to-amber-400 text-zinc-950 font-black text-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 border-2 border-amber-400/50 shrink-0 overflow-hidden">
+                                                <template x-if="avatarUrl">
+                                                    <img :src="avatarUrl" alt="Avatar Studio" class="w-full h-full object-cover">
+                                                </template>
+                                                <template x-if="!avatarUrl">
+                                                    <span>{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                                                </template>
                                             </div>
-                                            <div class="space-y-1">
-                                                <button type="button" @click="notifySaved('Gambar logo studio diperbarui!')" class="py-1.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-xs font-bold text-white transition">
-                                                    Ganti Logo Studio
-                                                </button>
-                                                <span class="text-[10px] text-zinc-500 block">Format PNG transparan disarankan</span>
+                                            <div class="space-y-1.5 flex-1">
+                                                <input type="text" id="avatar_url" name="avatar_url" x-model="avatarUrl" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2 px-3 focus:outline-none focus:border-amber-500 transition font-mono" placeholder="URL Foto Profil / Logo Studio">
+                                                <span class="text-[10px] text-zinc-500 block">Biarkan kosong untuk menggunakan avatar inisial nama otomatis</span>
                                             </div>
                                         </div>
+                                        <x-input-error class="mt-1" :messages="$errors->get('avatar_url')" />
                                     </div>
 
                                     <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-2">
-                                        <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Tagline Singkat Studio</label>
-                                        <input type="text" x-model="tagline" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition" placeholder="Contoh: Produksi Film Independen Quality 4K">
+                                        <label for="tagline" class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Tagline Singkat Studio</label>
+                                        <input type="text" id="tagline" name="tagline" x-model="tagline" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition" placeholder="Contoh: Produksi Film Independen Quality 4K">
+                                        <x-input-error class="mt-1" :messages="$errors->get('tagline')" />
                                     </div>
                                 </div>
 
@@ -318,8 +328,9 @@
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div class="space-y-1.5">
-                                        <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Custom Handle Studio (@)</label>
-                                        <input type="text" x-model="handle" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-amber-400 font-mono py-2.5 px-3 focus:outline-none focus:border-amber-500 transition">
+                                        <label for="handle" class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Custom Handle Studio (@)</label>
+                                        <input type="text" id="handle" name="handle" x-model="handle" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-amber-400 font-mono py-2.5 px-3 focus:outline-none focus:border-amber-500 transition" placeholder="@namastudio">
+                                        <x-input-error class="mt-1" :messages="$errors->get('handle')" />
                                     </div>
 
                                     <div class="space-y-1.5">
@@ -335,8 +346,9 @@
                                 </div>
 
                                 <div class="space-y-1.5">
-                                    <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Biografi & Deskripsi Profil Studio</label>
-                                    <textarea x-model="bio" rows="3" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition leading-relaxed" placeholder="Ceritakan tentang studio dan karya film kamu..."></textarea>
+                                    <label for="bio" class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Biografi & Deskripsi Profil Studio</label>
+                                    <textarea id="bio" name="bio" x-model="bio" rows="3" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition leading-relaxed" placeholder="Ceritakan tentang studio dan karya film kamu..."></textarea>
+                                    <x-input-error class="mt-1" :messages="$errors->get('bio')" />
                                 </div>
 
                                 <div class="pt-2 flex items-center gap-3">

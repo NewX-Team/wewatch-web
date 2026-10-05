@@ -2,78 +2,52 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CreatorController extends Controller
 {
     /**
-     * Display the specified creator channel page.
+     * Display the specified creator channel page using real database data.
      */
-    public function show(string $id): View
+    public function show(string $id, Request $request): View
     {
-        $creators = [
-            'neotokyo-studios' => [
-                'id' => 'neotokyo-studios',
-                'name' => 'NeoTokyo Studios',
-                'handle' => '@neotokyostudios',
-                'subscribers' => '128.5K',
-                'uploads_count' => 14,
-                'joined_date' => 'January 2025',
-                'bio' => 'Official Indie Creator Channel for Cyberpunk, Sci-Fi, and Dystopian High-Tech Cinema. Creating 4K cinematic stories for futuristic dreamers.',
-                'banner' => asset('images/hero_banner.jpg'),
-                'featured_movie' => [
-                    'id' => 'cyberpunk-shadows',
-                    'title' => 'Cyberpunk Shadows',
-                    'category' => 'Sci-Fi Series',
-                    'rating' => '4.9',
-                    'views' => '840K views',
-                    'time' => '2 weeks ago',
-                    'banner' => asset('images/hero_banner.jpg'),
-                    'description' => 'In a neon-soaked dystopian future of 2099 Tokyo, three rogue operatives with cybernetic enhancements unite to infiltrate the world\'s most dangerous mega-corporation.',
-                ],
-                'uploads' => [
-                    [
-                        'id' => 'cyberpunk-shadows',
-                        'title' => 'Cyberpunk Shadows',
-                        'category' => 'Sci-Fi Series',
-                        'duration' => '8 Ep',
-                        'views' => '840K views',
-                        'rating' => '4.9',
-                        'banner' => asset('images/hero_banner.jpg'),
-                    ],
-                    [
-                        'id' => 'midnight-drift',
-                        'title' => 'Midnight Drift',
-                        'category' => 'Action Thriller',
-                        'duration' => '1h 52m',
-                        'views' => '520K views',
-                        'rating' => '4.9',
-                        'banner' => asset('images/poster_action.jpg'),
-                    ],
-                    [
-                        'id' => 'deep-ocean-abyss',
-                        'title' => 'Deep Ocean Abyss 4K',
-                        'category' => 'Documentary',
-                        'duration' => '1h 24m',
-                        'views' => '310K views',
-                        'rating' => '5.0',
-                        'banner' => asset('images/poster_documentary.jpg'),
-                    ],
-                    [
-                        'id' => 'realm-of-eldoria',
-                        'title' => 'Realm of Eldoria',
-                        'category' => 'Fantasy Epic',
-                        'duration' => '10 Ep',
-                        'views' => '690K views',
-                        'rating' => '4.8',
-                        'banner' => asset('images/poster_fantasy.jpg'),
-                    ],
-                ],
-            ],
+        // Try finding user by ID or name/email
+        $user = null;
+
+        if (is_numeric($id)) {
+            $user = User::find($id);
+        }
+
+        if (! $user) {
+            $user = User::where('name', 'like', "%{$id}%")
+                ->orWhere('email', 'like', "%{$id}%")
+                ->first();
+        }
+
+        // Fallback to currently authenticated user if still null
+        if (! $user) {
+            $user = $request->user();
+        }
+
+        // Fetch real published movies created by this creator
+        $movies = $user->movies()->with('episodes')->orderBy('id', 'desc')->get();
+
+        $creator = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'handle' => $user->handle ?: ('@'.strtolower(str_replace(' ', '', $user->name))),
+            'subscribers' => '0 Subscribers',
+            'uploads_count' => $movies->count(),
+            'joined_date' => $user->created_at ? $user->created_at->format('F Y') : date('F Y'),
+            'bio' => $user->bio ?: ('Channel Resmi Kreator '.$user->name.' di WeWatch Cinema. Menyajikan tayangan sinematik berkualitas tinggi.'),
+            'banner' => $user->banner_url ?: asset('images/hero_banner.jpg'),
+            'avatar' => $user->avatar_url,
+            'tagline' => $user->tagline ?: 'Produksi Film Sinematik Quality 4K UHD',
         ];
 
-        $creator = $creators[$id] ?? $creators['neotokyo-studios'];
-
-        return view('creators.show', compact('creator'));
+        return view('creators.show', compact('creator', 'movies', 'user'));
     }
 }
