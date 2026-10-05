@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'is_suspended', 'is_root_admin', 'handle', 'bio', 'avatar_url', 'banner_url', 'tagline'])]
+#[Fillable(['name', 'email', 'password', 'role', 'is_suspended', 'is_root_admin', 'is_verified', 'handle', 'bio', 'avatar_url', 'banner_url', 'tagline'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -32,6 +32,7 @@ class User extends Authenticatable
             'role' => UserRole::class,
             'is_suspended' => 'boolean',
             'is_root_admin' => 'boolean',
+            'is_verified' => 'boolean',
         ];
     }
 
@@ -58,6 +59,11 @@ class User extends Authenticatable
     public function isSuspended(): bool
     {
         return (bool) $this->is_suspended;
+    }
+
+    public function isVerified(): bool
+    {
+        return (bool) $this->is_verified;
     }
 
     public function canDeleteUser(User $targetUser): bool

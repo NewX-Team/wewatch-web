@@ -31,9 +31,9 @@
 
             <!-- Brand & Back Button -->
             <div class="flex items-center gap-4">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition">
+                <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : (Auth::user()->isCreator() ? route('creator.dashboard') : route('user.dashboard')) }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                    <span>Kembali ke Dashboard</span>
+                    <span>{{ Auth::user()->isSuperAdmin() ? 'Kembali ke Admin Console' : (Auth::user()->isCreator() ? 'Kembali ke Studio Hub' : 'Kembali ke Dashboard') }}</span>
                 </a>
             </div>
 
@@ -75,9 +75,11 @@
                             <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
                                 {{ $creator['name'] }}
                             </h1>
-                            <span class="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center" title="Verified Creator Channel">
-                                <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                            </span>
+                            @if(!empty($creator['is_verified']))
+                                <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-600/30" title="Akun Kreator Terverifikasi (Official Verified Channel)">
+                                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="flex flex-wrap items-center gap-3 text-xs font-mono text-zinc-400">

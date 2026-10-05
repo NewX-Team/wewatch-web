@@ -57,7 +57,7 @@
                 </a>
 
                 <div class="hidden md:flex items-center gap-2 pl-4 border-l border-zinc-800">
-                    <a href="{{ route('creators.show', 'neotokyo-studios') }}" class="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white hover:border-zinc-700 transition flex items-center gap-1.5">
+                    <a href="{{ route('creators.show', Auth::user()->handle ? ltrim(Auth::user()->handle, '@') : Str::slug(Auth::user()->name)) }}" class="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white hover:border-zinc-700 transition flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5 fill-current text-red-500" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
                         <span>Lihat Channel Publik</span>
                     </a>
@@ -83,7 +83,7 @@
                             <div class="font-bold text-white truncate">{{ Auth::user()->name }}</div>
                             <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 font-mono text-[9px] font-bold border border-amber-500/30">Verified Creator</span>
                         </div>
-                        <a href="{{ route('user.dashboard') }}" class="block px-3 py-2 rounded-xl hover:bg-zinc-800 hover:text-white transition">Mode Penonton (Dashboard)</a>
+                        <a href="{{ route('creator.dashboard') }}" class="block px-3 py-2 rounded-xl hover:bg-zinc-800 hover:text-white transition">Creator Studio Hub</a>
                         <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-xl hover:bg-zinc-800 hover:text-white transition">Pengaturan Akun</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -103,15 +103,27 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6">
                 <div class="space-y-1">
                     <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 font-extrabold text-[10px] uppercase tracking-wider">
-                            CREATOR STUDIO HUB
-                        </span>
+                        @if(Auth::user()->isVerified())
+                            <span class="px-2.5 py-0.5 rounded bg-blue-500/15 border border-blue-500/30 text-blue-400 font-extrabold text-[10px] uppercase tracking-wider flex items-center gap-1" title="Kreator Terverifikasi Centang Biru">
+                                <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                <span>VERIFIED CREATOR STUDIO</span>
+                            </span>
+                        @else
+                            <span class="px-2.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 font-extrabold text-[10px] uppercase tracking-wider">
+                                CREATOR STUDIO HUB (BASIC)
+                            </span>
+                        @endif
                         <span class="text-xs font-mono text-zinc-400 font-bold">Creator: {{ Auth::user()->email }}</span>
                     </div>
 
-                    <h1 class="text-3xl font-black text-white tracking-tight">
-                        Studio Manajemen Film & Episode — {{ Auth::user()->name }} 🎬
-                    </h1>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-3xl font-black text-white tracking-tight">
+                            Studio Manajemen Film &amp; Episode — {{ Auth::user()->name }}
+                        </h1>
+                        @if(Auth::user()->isVerified())
+                            <svg class="w-7 h-7 fill-blue-500 shrink-0" title="Official Verified Badge" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        @endif
+                    </div>
                     <p class="text-xs text-zinc-400">
                         Terbitkan film baru, kelola status rilis (Ongoing / Tamat), dan tambahkan episode mingguan untuk penonton kamu.
                     </p>
@@ -163,20 +175,35 @@
                     <div class="text-[11px] text-zinc-400 font-medium">Konten episode rilis</div>
                 </div>
 
-                <!-- Metric 4: Estimated Earnings -->
-                <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-2xl p-5 space-y-2 shadow-lg relative overflow-hidden backdrop-blur-xl group hover:border-zinc-700 transition">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Estimasi Pendapatan</span>
-                        <div class="w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-400 flex items-center justify-center">
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                <!-- Metric 4: Revenue Status (Unlocked at Rp 0 if verified, Locked if unverified) -->
+                @if(Auth::user()->isVerified())
+                    <div class="bg-zinc-900/90 border border-emerald-500/30 rounded-2xl p-5 space-y-2 shadow-lg relative overflow-hidden backdrop-blur-xl group hover:border-emerald-500/50 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Estimasi Pendapatan</span>
+                            <div class="w-8 h-8 rounded-lg bg-emerald-600/10 text-emerald-400 flex items-center justify-center">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-black text-emerald-400 font-mono tracking-tight">Rp 0</div>
+                        <div class="flex items-center justify-between text-[10px] text-zinc-400">
+                            <span>Monetisasi Terverifikasi</span>
+                            <span class="text-emerald-400 font-bold">Aktif</span>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-emerald-400 font-mono tracking-tight">Rp 14.850.000</div>
-                    <div class="flex items-center justify-between text-[10px] text-zinc-400">
-                        <span>Pencairan: 15 Okt 2026</span>
-                        <span class="text-emerald-400 font-bold">Ready</span>
+                @else
+                    <div class="bg-zinc-900/90 border border-amber-500/30 rounded-2xl p-5 space-y-2 shadow-lg relative overflow-hidden backdrop-blur-xl group hover:border-amber-500/50 transition">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Fitur Pendapatan</span>
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                            </div>
+                        </div>
+                        <div class="text-lg font-black text-zinc-300 font-mono tracking-tight flex items-center gap-1.5">
+                            <span>TERKUNCI 🔒</span>
+                        </div>
+                        <div class="text-[10px] text-amber-400/80 font-medium">Perlu Verifikasi SuperAdmin</div>
                     </div>
-                </div>
+                @endif
             </div>
 
             <!-- MEDIA LIBRARY TABLE & CONTENT MANAGEMENT -->
@@ -314,22 +341,31 @@
                         <h3 class="text-base font-extrabold text-white tracking-tight">Komentar Penonton Terbaru pada Karya Kamu</h3>
                         <p class="text-xs text-zinc-400">Balas langsung komentar penggemar di film kamu</p>
                     </div>
-                    <span class="px-2.5 py-1 rounded-full bg-red-600/15 border border-red-600/30 text-red-400 font-mono text-xs font-bold">2 Komentar Baru</span>
                 </div>
+
+                @php
+                    $latestAudienceUser = \App\Models\User::where('role', \App\Enums\UserRole::User)->latest()->first() ?? Auth::user();
+                @endphp
 
                 <div class="space-y-3">
                     <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-2">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-lg bg-red-600 text-white font-bold text-xs flex items-center justify-center">A</div>
+                                <div class="w-7 h-7 rounded-lg bg-red-600 text-white font-bold text-xs flex items-center justify-center overflow-hidden">
+                                    @if(!empty($latestAudienceUser->avatar_url))
+                                        <img src="{{ asset($latestAudienceUser->avatar_url) }}" alt="{{ $latestAudienceUser->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ strtoupper(substr($latestAudienceUser->name, 0, 1)) }}
+                                    @endif
+                                </div>
                                 <div>
-                                    <span class="font-bold text-white text-xs">Alex Rivera</span>
+                                    <span class="font-bold text-white text-xs">{{ $latestAudienceUser->name }}</span>
                                     <span class="text-[10px] text-zinc-500 ml-1">pada film tayangan kamu</span>
                                 </div>
                             </div>
-                            <span class="text-[10px] text-zinc-500 font-mono">15m lalu</span>
+                            <span class="text-[10px] text-zinc-500 font-mono">Baru Saja</span>
                         </div>
-                        <p class="text-xs text-zinc-300 leading-relaxed pl-9">Gokil sinematografi nya dapet banget vibes cyberpunk-nya! Episode selanjutnya ditunggu min 🔥</p>
+                        <p class="text-xs text-zinc-300 leading-relaxed pl-9">Gokil sinematografi nya dapet banget vibes-nya! Episode selanjutnya ditunggu min 🔥</p>
                     </div>
                 </div>
             </div>

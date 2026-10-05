@@ -44,6 +44,8 @@ class DashboardController extends Controller
             'suspended_users' => User::where('is_suspended', true)->count(),
             'total_announcements' => Announcement::count(),
             'active_announcements' => Announcement::where('is_active', true)->count(),
+            'verified_creators' => User::where('role', UserRole::Creator)->where('is_verified', true)->count(),
+            'unverified_creators' => User::where('role', UserRole::Creator)->where('is_verified', false)->count(),
         ];
 
         return view('dashboards.super-admin', compact('users', 'stats', 'announcements'));

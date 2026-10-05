@@ -55,6 +55,21 @@ class AdminUserController extends Controller
     }
 
     /**
+     * Toggle verification status of a creator account (Super Admin action).
+     */
+    public function toggleVerification(Request $request, User $user): RedirectResponse
+    {
+        $user->is_verified = ! $user->is_verified;
+        $user->save();
+
+        $statusMsg = $user->is_verified
+            ? "Akun Kreator {$user->name} berhasil di-verifikasi (Centang Biru & Fitur Revenue Terbuka)!"
+            : "Verifikasi akun Kreator {$user->name} telah dicabut!";
+
+        return redirect()->route('admin.dashboard')->with('success', $statusMsg);
+    }
+
+    /**
      * Remove the specified user account.
      * Root Super Admin can delete sub-admins, creators, and users.
      * Regular admins can delete creators and users, but NOT fellow admins.

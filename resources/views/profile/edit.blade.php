@@ -35,16 +35,16 @@
 
             <!-- Left: Brand Logo & Back -->
             <div class="flex items-center gap-4">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition">
+                <a href="{{ $user->isSuperAdmin() ? route('admin.dashboard') : ($user->isCreator() ? route('creator.dashboard') : route('user.dashboard')) }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-300 hover:text-white transition">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                    <span>{{ $user->isCreator() ? 'Kembali ke Studio Hub' : 'Kembali ke Dashboard' }}</span>
+                    <span>{{ $user->isSuperAdmin() ? 'Kembali ke Admin Console' : ($user->isCreator() ? 'Kembali ke Studio Hub' : 'Kembali ke Dashboard') }}</span>
                 </a>
             </div>
 
             <!-- Right: Tier / Role Badge & Profile -->
             <div class="flex items-center space-x-3 shrink-0">
                 @if($user->isCreator())
-                    <a href="{{ route('creators.show', $user->name) }}" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition group">
+                    <a href="{{ route('creators.show', $user->handle ? ltrim($user->handle, '@') : Str::slug($user->name)) }}" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 transition group">
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
                         <span class="text-[11px] font-black tracking-wider uppercase text-amber-300">CREATOR HUB</span>
                         <span class="text-[9px] font-bold text-amber-200 bg-amber-600/30 border border-amber-500/40 px-1.5 py-0.5 rounded">LIHAT CHANNEL</span>
@@ -98,7 +98,7 @@
                       commentModeration: localStorage.getItem('creator_commentModeration') || 'spam',
                       masterQuality: localStorage.getItem('creator_masterQuality') || '4k',
                       // Social Links State
-                      website: localStorage.getItem('creator_website') || 'https://wewatch.id/creators/neotokyo-studios',
+                      website: localStorage.getItem('creator_website') || ('https://wewatch.id/creators/' + {{ Js::from($user->handle ? ltrim($user->handle, '@') : Str::slug($user->name)) }}),
                       youtube: localStorage.getItem('creator_youtube') || ('https://youtube.com/@' + {{ Js::from(Str::slug($user->name, '')) }}),
                       instagram: localStorage.getItem('creator_instagram') || ('@' + {{ Js::from(Str::slug($user->name, '')) }} + '.cinema'),
                       twitter: localStorage.getItem('creator_twitter') || ('@' + {{ Js::from(Str::slug($user->name, '')) }} + '_films'),
@@ -365,121 +365,153 @@
                             <header class="space-y-1">
                                 <h2 class="text-lg font-black text-white tracking-tight flex items-center gap-2">
                                     <svg class="w-5 h-5 text-amber-500 fill-current" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-                                    <span>Monetisasi Studio & Rekening Penarikan (Payouts)</span>
+                                    <span>Monetisasi Studio &amp; Rekening Penarikan (Payouts)</span>
                                 </h2>
                                 <p class="text-xs text-zinc-400">
-                                    Pengaturan akun bank / e-wallet pencairan hasil bagi hasil tontonan film & karya kamu.
+                                    Pengaturan akun bank / e-wallet pencairan hasil bagi hasil tontonan film &amp; karya kamu.
                                 </p>
                             </header>
 
-                            <!-- Monetization Status Banner -->
-                            <div class="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-950 to-zinc-950 border border-amber-500/30 space-y-4">
-                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-black text-xs">
-                                            80%
+                            @if($user->isVerified())
+                                <!-- Monetization Status Banner (UNLOCKED) -->
+                                <div class="p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-zinc-950 to-zinc-950 border border-emerald-500/30 space-y-4">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800/80 pb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-black text-xs">
+                                                80%
+                                            </div>
+                                            <div>
+                                                <h3 class="font-extrabold text-white text-sm flex items-center gap-1.5">
+                                                    <span>Program Monetisasi Resmi</span>
+                                                    <svg class="w-4 h-4 fill-blue-500 shrink-0" title="Centang Biru Official" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                </h3>
+                                                <span class="text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-1">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                                    Status: Terverifikasi &amp; Aktif (Centang Biru)
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 class="font-extrabold text-white text-sm">Program Monetisasi Kreator</h3>
-                                            <span class="text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-1">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                                Status: Terverifikasi & Aktif
-                                            </span>
+
+                                        <div class="text-left sm:text-right">
+                                            <span class="text-[10px] text-zinc-400 block uppercase font-mono font-bold">Saldo Siap Cair</span>
+                                            <span class="text-lg font-black text-emerald-400 font-mono">Rp 0</span>
                                         </div>
                                     </div>
 
-                                    <div class="text-left sm:text-right">
-                                        <span class="text-[10px] text-zinc-400 block uppercase font-mono font-bold">Saldo Siap Cair</span>
-                                        <span class="text-lg font-black text-amber-400 font-mono">Rp 14.850.000</span>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center justify-between text-xs text-zinc-400">
-                                    <span>Skema Bagi Hasil: <strong class="text-white font-mono">80% Creator / 20% WeWatch Platform</strong></span>
-                                    <button type="button" @click="notifySaved('Permintaan pencairan dana telah dikirim!')" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-xs shadow transition active:scale-95">
-                                        Tarik Saldo
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="space-y-5 pt-2">
-                                <!-- Payout Method Selection -->
-                                <div class="space-y-3">
-                                    <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Pilih Metode Pencairan Pendapatan</label>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <button @click="payoutMethod = 'bank'" :class="payoutMethod === 'bank' ? 'border-amber-500 bg-amber-500/10 text-white' : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white'" class="p-3.5 rounded-2xl border text-xs font-bold text-left transition space-y-1">
-                                            <div class="flex items-center justify-between">
-                                                <span>Transfer Bank Rekening Direct</span>
-                                                <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-amber-400 font-mono text-[9px]">BCA / Mandiri / BNI</span>
-                                            </div>
-                                            <span class="text-[10px] text-zinc-400 font-normal block">Pencairan langsung ke rekening utama bank nasional</span>
-                                        </button>
-
-                                        <button @click="payoutMethod = 'ewallet'" :class="payoutMethod === 'ewallet' ? 'border-amber-500 bg-amber-500/10 text-white' : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white'" class="p-3.5 rounded-2xl border text-xs font-bold text-left transition space-y-1">
-                                            <div class="flex items-center justify-between">
-                                                <span>E-Wallet Instan</span>
-                                                <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-emerald-400 font-mono text-[9px]">GoPay / OVO / DANA</span>
-                                            </div>
-                                            <span class="text-[10px] text-zinc-400 font-normal block">Proses pencairan instan 24 jam via nomor HP e-wallet</span>
+                                    <div class="flex items-center justify-between text-xs text-zinc-400">
+                                        <span>Skema Bagi Hasil: <strong class="text-white font-mono">80% Creator / 20% WeWatch Platform</strong></span>
+                                        <button type="button" @click="notifySaved('Saldo pencairan Anda saat ini Rp 0. Pendapatan akan diakumulasi secara otomatis.')" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow transition active:scale-95">
+                                            Tarik Saldo
                                         </button>
                                     </div>
                                 </div>
 
-                                <!-- Bank / E-Wallet Account Info Form -->
-                                <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-4">
-                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <div class="space-y-1">
-                                            <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Penyedia Bank / E-Wallet</label>
-                                            <select x-model="bankName" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition font-bold">
-                                                <option value="bca">Bank BCA (Central Asia)</option>
-                                                <option value="mandiri">Bank Mandiri</option>
-                                                <option value="bni">Bank BNI</option>
-                                                <option value="bri">Bank BRI</option>
-                                                <option value="gopay">GoPay (E-Wallet)</option>
-                                                <option value="ovo">OVO (E-Wallet)</option>
-                                                <option value="dana">DANA (E-Wallet)</option>
-                                            </select>
-                                        </div>
+                                <div class="space-y-5 pt-2">
+                                    <!-- Payout Method Selection -->
+                                    <div class="space-y-3">
+                                        <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Pilih Metode Pencairan Pendapatan</label>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <button @click="payoutMethod = 'bank'" :class="payoutMethod === 'bank' ? 'border-amber-500 bg-amber-500/10 text-white' : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white'" class="p-3.5 rounded-2xl border text-xs font-bold text-left transition space-y-1">
+                                                <div class="flex items-center justify-between">
+                                                    <span>Transfer Bank Rekening Direct</span>
+                                                    <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-amber-400 font-mono text-[9px]">BCA / Mandiri / BNI</span>
+                                                </div>
+                                                <span class="text-[10px] text-zinc-400 font-normal block">Pencairan langsung ke rekening utama bank nasional</span>
+                                            </button>
 
-                                        <div class="space-y-1">
-                                            <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Nomor Rekening / No. HP</label>
-                                            <input type="text" x-model="accountNo" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 font-mono py-2.5 px-3 focus:outline-none focus:border-amber-500 transition">
-                                        </div>
-
-                                        <div class="space-y-1">
-                                            <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Nama Pemilik Rekening</label>
-                                            <input type="text" x-model="accountName" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition font-bold">
+                                            <button @click="payoutMethod = 'ewallet'" :class="payoutMethod === 'ewallet' ? 'border-amber-500 bg-amber-500/10 text-white' : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white'" class="p-3.5 rounded-2xl border text-xs font-bold text-left transition space-y-1">
+                                                <div class="flex items-center justify-between">
+                                                    <span>E-Wallet Instan</span>
+                                                    <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-emerald-400 font-mono text-[9px]">GoPay / OVO / DANA</span>
+                                                </div>
+                                                <span class="text-[10px] text-zinc-400 font-normal block">Proses pencairan instan 24 jam via nomor HP e-wallet</span>
+                                            </button>
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-800/80 pt-4">
-                                        <div class="space-y-1">
-                                            <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Ambang Batas Cashout Minimum</label>
-                                            <select x-model="cashoutThreshold" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition">
-                                                <option value="100000">Rp 100.000 (Default Minimum)</option>
-                                                <option value="500000">Rp 500.000</option>
-                                                <option value="1000000">Rp 1.000.000</option>
-                                            </select>
+                                    <!-- Bank / E-Wallet Account Info Form -->
+                                    <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-4">
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            <div class="space-y-1">
+                                                <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Penyedia Bank / E-Wallet</label>
+                                                <select x-model="bankName" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition font-bold">
+                                                    <option value="bca">Bank BCA (Central Asia)</option>
+                                                    <option value="mandiri">Bank Mandiri</option>
+                                                    <option value="bni">Bank BNI</option>
+                                                    <option value="bri">Bank BRI</option>
+                                                    <option value="gopay">GoPay (E-Wallet)</option>
+                                                    <option value="ovo">OVO (E-Wallet)</option>
+                                                    <option value="dana">DANA (E-Wallet)</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="space-y-1">
+                                                <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Nomor Rekening / No. HP</label>
+                                                <input type="text" x-model="accountNo" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 font-mono py-2.5 px-3 focus:outline-none focus:border-amber-500 transition">
+                                            </div>
+
+                                            <div class="space-y-1">
+                                                <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Nama Pemilik Rekening</label>
+                                                <input type="text" x-model="accountName" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition font-bold">
+                                            </div>
                                         </div>
 
-                                        <div class="space-y-1">
-                                            <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Jadwal Penarikan Otomatis</label>
-                                            <select x-model="autoPayout" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition">
-                                                <option value="semi_monthly">Otomatis Setiap Tgl 1 & 15 Bulanan</option>
-                                                <option value="monthly">Otomatis Setiap Akhir Bulan</option>
-                                                <option value="manual">Manual Cashout Sesuai Keinginan</option>
-                                            </select>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-800/80 pt-4">
+                                            <div class="space-y-1">
+                                                <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Ambang Batas Cashout Minimum</label>
+                                                <select x-model="cashoutThreshold" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition">
+                                                    <option value="100000">Rp 100.000 (Default Minimum)</option>
+                                                    <option value="500000">Rp 500.000</option>
+                                                    <option value="1000000">Rp 1.000.000</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="space-y-1">
+                                                <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300">Jadwal Penarikan Otomatis</label>
+                                                <select x-model="autoPayout" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-zinc-100 py-2.5 px-3 focus:outline-none focus:border-amber-500 transition">
+                                                    <option value="semi_monthly">Otomatis Setiap Tgl 1 &amp; 15 Bulanan</option>
+                                                    <option value="monthly">Otomatis Setiap Akhir Bulan</option>
+                                                    <option value="manual">Manual Cashout Sesuai Keinginan</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="pt-2">
-                                    <button @click="savePayouts()" class="py-2.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-xs shadow-lg shadow-amber-500/20 transition active:scale-95 flex items-center gap-2">
-                                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
-                                        <span>Simpan Rekening Payout</span>
-                                    </button>
+                                    <div class="pt-2">
+                                        <button @click="savePayouts()" class="py-2.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-xs shadow-lg shadow-amber-500/20 transition active:scale-95 flex items-center gap-2">
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                                            <span>Simpan Rekening Payout</span>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <!-- Monetization Status Banner (LOCKED FOR UNVERIFIED CREATORS) -->
+                                <div class="p-6 rounded-3xl bg-zinc-900/90 border border-amber-500/40 space-y-4 shadow-xl relative overflow-hidden backdrop-blur-xl">
+                                    <div class="flex items-center gap-4 border-b border-zinc-800/80 pb-4">
+                                        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                                            <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <h3 class="font-black text-white text-base">Fitur Monetisasi &amp; Penarikan Saldo Terkunci 🔒</h3>
+                                                <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono text-[10px] font-bold border border-amber-500/30">UNVERIFIED</span>
+                                            </div>
+                                            <p class="text-xs text-zinc-300 leading-relaxed">
+                                                Akun Kreator Anda saat ini belum diverifikasi oleh SuperAdmin. Pengaturan rekening pencairan saldo, skema bagi hasil, dan penarikan saldo pendapatan akan terbuka secara otomatis begitu akun Anda mendapatkan status **Verifikasi Centang Biru**.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-4 rounded-2xl bg-zinc-950/80 border border-zinc-800/80 space-y-2 text-xs text-zinc-400">
+                                        <div class="font-bold text-amber-400 flex items-center gap-1.5">
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M11 17h2v-6h-2v6zm1-15C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>                                            <span>Cara Mendapatkan Verifikasi Centang Biru:</span>
+                                        </div>
+                                        <p class="text-[11px] text-zinc-400 leading-relaxed pl-5">
+                                            SuperAdmin akan meninjau kelayakan karya film Anda di platform. Setelah disetujui, SuperAdmin akan mengaktifkan Verifikasi Centang Biru melalui konsol Manajemen Kreator dan seluruh fitur penarikan saldo ini akan terbuka penuh.
+                                        </p>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
 
                         <!-- TAB 3: DEFAULT UPLOAD & HAK CIPTA -->

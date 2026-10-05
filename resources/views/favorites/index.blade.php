@@ -74,7 +74,7 @@
                 <!-- Left: Brand Logo & Links -->
                 <div class="flex items-center gap-6">
                     <!-- Brand -->
-                    <a href="{{ route('user.dashboard') }}" class="flex items-center gap-2.5 group shrink-0">
+                    <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : (Auth::user()->isCreator() ? route('creator.dashboard') : route('user.dashboard')) }}" class="flex items-center gap-2.5 group shrink-0">
                         <div class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-black text-sm text-white tracking-tighter shadow-md transition group-hover:scale-105">
                             W
                         </div>
@@ -85,7 +85,7 @@
 
                     <!-- Navigation Links -->
                     <div class="flex items-center space-x-1 sm:space-x-2 text-xs font-bold">
-                        <a href="{{ route('user.dashboard') }}" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
+                        <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : (Auth::user()->isCreator() ? route('creator.dashboard') : route('user.dashboard')) }}" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
                             Home
                         </a>
                         <a href="{{ route('favorites.index') }}" class="px-3 py-1.5 rounded-lg bg-red-600/15 text-red-400 border border-red-600/30 transition flex items-center gap-1.5 shadow-sm">
@@ -285,7 +285,7 @@
                                 <span>+ Tambahkan Rekomendasi Instan</span>
                             </button>
 
-                            <a href="{{ route('user.dashboard') }}" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-bold text-xs border border-zinc-700/60 transition flex items-center justify-center gap-2">
+                            <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : (Auth::user()->isCreator() ? route('creator.dashboard') : route('user.dashboard')) }}" class="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-bold text-xs border border-zinc-700/60 transition flex items-center justify-center gap-2">
                                 <span>Jelajahi Beranda Utama</span>
                                 <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
                             </a>
@@ -359,7 +359,7 @@
                     <span>&copy; {{ date('Y') }} All rights reserved.</span>
                 </div>
                 <div class="flex items-center gap-4 text-[11px]">
-                    <a href="{{ route('user.dashboard') }}" class="hover:text-zinc-300 transition">Katalog</a>
+                    <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : (Auth::user()->isCreator() ? route('creator.dashboard') : route('user.dashboard')) }}" class="hover:text-zinc-300 transition">Katalog</a>
                     <a href="{{ route('subscription.index') }}" class="hover:text-zinc-300 transition">Membership</a>
                     <a href="{{ route('profile.edit') }}" class="hover:text-zinc-300 transition">Profil</a>
                 </div>

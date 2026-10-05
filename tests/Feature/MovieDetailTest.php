@@ -4,15 +4,27 @@ use App\Models\Movie;
 use App\Models\User;
 
 test('authenticated user can view movie detail page', function () {
+    $creator = User::factory()->creator()->create();
+    $movie = Movie::create([
+        'user_id' => $creator->id,
+        'title' => 'Cyberpunk Shadows',
+        'slug' => 'cyberpunk-shadows',
+        'description' => 'Film sci-fi sinematik.',
+        'genre' => 'Sci-Fi',
+        'status' => 'ongoing',
+        'access_tier' => 'free',
+        'is_published' => true,
+    ]);
+
     $user = User::factory()->user()->create();
 
-    $response = $this->actingAs($user)->get('/movies/cyberpunk-shadows');
+    $response = $this->actingAs($user)->get('/movies/'.$movie->id);
 
     $response->assertStatus(200);
     $response->assertSee('Cyberpunk Shadows');
-    $response->assertSee('Overview');
-    $response->assertSee('Episodes');
-    $response->assertSee('Genres');
+    $response->assertSee('Synopsis');
+    $response->assertSee('Episode');
+    $response->assertSee('Sci-Fi');
 });
 
 test('user can view real creator published movie detail and link to creator channel', function () {

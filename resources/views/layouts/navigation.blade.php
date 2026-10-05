@@ -5,7 +5,7 @@
             <div class="flex items-center space-x-8">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2 font-bold text-xl tracking-tight text-white">
+                    <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : (Auth::user()->isCreator() ? route('creator.dashboard') : route('user.dashboard')) }}" class="flex items-center gap-2 font-bold text-xl tracking-tight text-white">
                         <span class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">WeWatch</span>
                     </a>
                 </div>

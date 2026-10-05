@@ -140,6 +140,14 @@
                         <span x-show="!collapsed" class="truncate flex-1 text-left">Kelola Akun Pengguna</span>
                     </button>
 
+                    <button @click="activeTab = 'creators'"
+                            :class="activeTab === 'creators' ? 'bg-red-600/15 text-white border-red-600/30' : 'border-transparent text-zinc-400 hover:text-white hover:bg-zinc-900'"
+                            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-xs font-semibold transition">
+                        <svg class="w-[18px] h-[18px] fill-current text-blue-500 shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        <span x-show="!collapsed" class="truncate flex-1 text-left">Manajemen Kreator</span>
+                        <span x-show="!collapsed && {{ $stats['verified_creators'] ?? 0 }} > 0" class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-bold">{{ $stats['verified_creators'] }} Verified</span>
+                    </button>
+
                     <button @click="activeTab = 'announcements'"
                             :class="activeTab === 'announcements' ? 'bg-red-600/15 text-white border-red-600/30' : 'border-transparent text-zinc-400 hover:text-white hover:bg-zinc-900'"
                             class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-xs font-semibold transition">
@@ -200,9 +208,9 @@
 
                     <div x-show="menu" @click.away="menu = false" x-transition
                          class="absolute bottom-full left-0 mb-2 w-60 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-2 text-xs text-zinc-300 space-y-1 z-50" style="display: none;">
-                        <a href="{{ route('user.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-zinc-800 hover:text-white transition">
-                            <svg class="w-4 h-4 fill-current text-zinc-500" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                            Lihat Mode Penonton
+                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-zinc-800 hover:text-white transition">
+                            <svg class="w-4 h-4 fill-current text-red-500" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                            Control Console Admin
                         </a>
                         <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-zinc-800 hover:text-white transition">
                             <svg class="w-4 h-4 fill-current text-zinc-500" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -577,6 +585,139 @@
                     <div class="px-6 py-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
                         <span>Menampilkan <strong>{{ count($announcements) }}</strong> siaran pengumuman di basis data</span>
                         <span class="text-zinc-600 font-mono">Sequential Broadcast System</span>
+                    </div>
+                </section>
+
+                <!-- TAB 3: CREATOR MANAGEMENT & VERIFICATION TABLE -->
+                <section x-show="activeTab === 'creators'" class="bg-zinc-900/90 border border-zinc-800/90 rounded-3xl overflow-hidden backdrop-blur-xl space-y-4 shadow-2xl">
+                    <div class="p-6 border-b border-zinc-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded bg-blue-500/15 border border-blue-500/30 text-blue-400 font-extrabold text-[10px] uppercase tracking-wider">
+                                    MANAJEMEN KREATOR OFFICIAL
+                                </span>
+                                <span class="text-xs font-mono text-zinc-400 font-bold">{{ $stats['verified_creators'] }} Terverifikasi</span>
+                            </div>
+                            <h2 class="text-xl font-extrabold text-white tracking-tight mt-1">
+                                Verifikasi Channel Kreator &amp; Akses Monetisasi (Centang Biru)
+                            </h2>
+                            <p class="text-xs text-zinc-400 mt-0.5">
+                                Berikan centang biru resmi dan buka akses fitur pendapatan/monetisasi untuk akun kreator terpercaya.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto max-w-full">
+                        <table class="w-full text-left text-xs text-zinc-300">
+                            <thead class="bg-zinc-950/80 text-zinc-500 uppercase tracking-wider text-[10px] font-bold border-b border-zinc-800/80 whitespace-nowrap">
+                                <tr>
+                                    <th class="px-6 py-3.5">Channel Kreator</th>
+                                    <th class="px-6 py-3.5">Email Akun</th>
+                                    <th class="px-6 py-3.5">Status Verifikasi</th>
+                                    <th class="px-6 py-3.5">Karya Film Rilis</th>
+                                    <th class="px-6 py-3.5">Akses Revenue</th>
+                                    <th class="px-6 py-3.5 text-right">Tindakan SuperAdmin</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-800/80">
+                                @forelse ($users->filter(fn($u) => $u->isCreator()) as $creatorUser)
+                                    <tr x-show="searchQuery === '' || '{{ strtolower($creatorUser->name) }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower($creatorUser->email) }}'.includes(searchQuery.toLowerCase())" class="hover:bg-zinc-800/40 transition">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-xl bg-red-600 text-white font-bold text-xs flex items-center justify-center shrink-0 overflow-hidden border border-zinc-800">
+                                                    @if(!empty($creatorUser->avatar_url))
+                                                        <img src="{{ asset($creatorUser->avatar_url) }}" alt="{{ $creatorUser->name }}" class="w-full h-full object-cover">
+                                                    @else
+                                                        {{ strtoupper(substr($creatorUser->name, 0, 1)) }}
+                                                    @endif
+                                                </div>
+                                                <div>
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="font-bold text-white text-xs">{{ $creatorUser->name }}</span>
+                                                        @if($creatorUser->isVerified())
+                                                            <svg class="w-4 h-4 fill-blue-500 shrink-0" title="Centang Biru Official" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                        @endif
+                                                    </div>
+                                                    <a href="{{ route('creators.show', $creatorUser->handle ? ltrim($creatorUser->handle, '@') : $creatorUser->id) }}" class="text-[10px] text-zinc-400 font-mono hover:text-red-400 transition">
+                                                        {{ $creatorUser->handle ?: '@'.\Illuminate\Support\Str::slug($creatorUser->name, '') }}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td class="px-6 py-4 font-mono text-[11px] text-zinc-300">
+                                            {{ $creatorUser->email }}
+                                        </td>
+
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($creatorUser->isVerified())
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-600/20 border border-blue-500/40 text-blue-400 font-bold text-[10px]">
+                                                    <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                    <span>Terverifikasi (Centang Biru)</span>
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-zinc-400 font-bold text-[10px]">
+                                                    <span>Belum Verifikasi (Basic)</span>
+                                                </span>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-6 py-4 font-mono text-[11px] text-zinc-300">
+                                            {{ $creatorUser->movies->count() }} Film
+                                        </td>
+
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($creatorUser->isVerified())
+                                                <span class="text-emerald-400 font-mono text-[11px] font-bold">Terbuka (Rp 0)</span>
+                                            @else
+                                                <span class="text-amber-400/80 font-mono text-[10px] font-bold">Terkunci 🔒</span>
+                                            @endif
+                                        </td>
+
+                                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                                            <form id="verify-form-{{ $creatorUser->id }}" method="POST" action="{{ route('admin.users.toggle-verification', $creatorUser->id) }}" class="inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                @if($creatorUser->isVerified())
+                                                    <button type="button"
+                                                            @click="confirmAction({
+                                                                title: 'Pencabutan Verifikasi Kreator',
+                                                                message: 'Apakah Anda yakin ingin mencabut Verifikasi Centang Biru dan mengunci fitur revenue untuk channel {{ $creatorUser->name }}?',
+                                                                confirmText: 'Ya, Cabut Verifikasi',
+                                                                cancelText: 'Batal',
+                                                                type: 'warning',
+                                                                formId: 'verify-form-{{ $creatorUser->id }}'
+                                                            })"
+                                                            class="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-zinc-950 font-extrabold text-[11px] transition">
+                                                        Cabut Verifikasi
+                                                    </button>
+                                                @else
+                                                    <button type="button"
+                                                            @click="confirmAction({
+                                                                title: 'Berikan Verifikasi Centang Biru',
+                                                                message: 'Apakah Anda yakin ingin memberikan status Verifikasi Centang Biru dan membuka fitur pendapatan untuk {{ $creatorUser->name }}?',
+                                                                confirmText: 'Ya, Verifikasi Sekarang',
+                                                                cancelText: 'Batal',
+                                                                type: 'info',
+                                                                formId: 'verify-form-{{ $creatorUser->id }}'
+                                                            })"
+                                                            class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-[11px] shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5 ml-auto">
+                                                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                        <span>Verifikasi Kreator</span>
+                                                    </button>
+                                                @endif
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-12 text-center text-zinc-500 space-y-2">
+                                            <p class="font-bold">Belum ada akun Kreator terdaftar</p>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
                 </section>
             </main>

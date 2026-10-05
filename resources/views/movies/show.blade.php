@@ -22,11 +22,7 @@
               activeEpisode: {{ json_encode($movie['episodes'][0] ?? ['number' => 1, 'title' => $movie['title'], 'duration' => $movie['duration'], 'thumb' => $movie['banner']]) }},
               progress: 24,
               newCommentText: '',
-              comments: [
-                  { id: 1, name: 'Alex Rivera', initial: 'A', color: 'bg-red-600', time: '15m ago', content: 'Gokil sinematografi nya dapet banget vibes cyberpunk-nya! Episode 3 paling epic pertarungannya 🔥', likes: 12, liked: false },
-                  { id: 2, name: 'Sarah Connor', initial: 'S', color: 'bg-purple-600', time: '2h ago', content: 'Editing suara dan soundtracknya juara sih, pas banget dikombinasiin sama visual neonnya.', likes: 8, liked: false },
-                  { id: 3, name: 'Kaito Tanaka', initial: 'K', color: 'bg-emerald-600', time: '5h ago', content: 'Alur ceritanya padat dan ga bertele-tele. Ditunggu kelanjutan episode selanjutnya min!', likes: 5, liked: false }
-              ],
+              comments: {{ json_encode($initialComments ?? []) }},
               addComment() {
                   if (this.newCommentText.trim() === '') return;
                   this.comments.unshift({
@@ -65,9 +61,9 @@
                 <!-- Top Navigation & Badges Bar (Over Video) -->
                 <div class="relative z-20 p-5 sm:p-7 flex items-center justify-between">
                     <!-- Back Button -->
-                    <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800/80 backdrop-blur-md text-xs font-bold transition shadow-lg">
+                    <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : (Auth::user()->isCreator() ? route('creator.dashboard') : route('user.dashboard')) }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800/80 backdrop-blur-md text-xs font-bold transition shadow-lg">
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                        <span>Back to Catalogue</span>
+                        <span>{{ Auth::user()->isSuperAdmin() ? 'Kembali ke Admin Console' : (Auth::user()->isCreator() ? 'Kembali ke Studio Hub' : 'Back to Catalogue') }}</span>
                     </a>
 
                     <!-- Video Quality & Atmos Badge -->
@@ -159,7 +155,7 @@
 
                     <!-- Creator Profile Card (Clickable to Creator Channel Page) -->
                     <div class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800/90 hover:border-red-600/50 transition duration-300 shadow-xl group">
-                        <a href="{{ route('creators.show', $movie['creator']['id']) }}" class="flex items-center gap-3.5 flex-1 min-w-0">
+                        <a href="{{ route('creators.show', $movie['creator']['slug'] ?? $movie['creator']['id']) }}" class="flex items-center gap-3.5 flex-1 min-w-0">
                             <!-- Avatar Image or Letter Initial -->
                             <div class="w-11 h-11 rounded-full bg-red-600 border-2 border-zinc-950 shadow-lg flex items-center justify-center shrink-0 overflow-hidden text-white font-black text-lg group-hover:scale-105 transition">
                                 @if(!empty($movie['creator']['avatar']))
@@ -171,9 +167,11 @@
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-1.5">
                                     <h4 class="font-black text-white text-xs truncate group-hover:text-red-400 transition">{{ $movie['creator']['name'] }}</h4>
-                                    <span class="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0" title="Verified Creator Channel">
-                                        <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                                    </span>
+                                    @if(!empty($movie['creator']['is_verified']))
+                                        <span class="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm" title="Verified Creator Channel">
+                                            <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="flex items-center gap-2 text-[10px] text-zinc-400 font-mono truncate mt-0.5">
                                     <span class="text-zinc-300 font-bold">{{ $movie['creator']['handle'] }}</span>
@@ -183,7 +181,7 @@
                             </div>
                         </a>
 
-                        <a href="{{ route('creators.show', $movie['creator']['id']) }}" class="px-3.5 py-2 rounded-xl bg-red-600/10 border border-red-600/30 hover:bg-red-600 hover:text-white text-red-400 text-xs font-extrabold transition shrink-0 flex items-center gap-1.5">
+                        <a href="{{ route('creators.show', $movie['creator']['slug'] ?? $movie['creator']['id']) }}" class="px-3.5 py-2 rounded-xl bg-red-600/10 border border-red-600/30 hover:bg-red-600 hover:text-white text-red-400 text-xs font-extrabold transition shrink-0 flex items-center gap-1.5">
                             <span>Buka Channel</span>
                             <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
                         </a>

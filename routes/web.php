@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/admin/dashboard', [DashboardController::class, 'superAdmin'])->name('admin.dashboard');
         Route::post('/admin/users', [AdminUserController::class, 'store'])->name('admin.users.store');
         Route::patch('/admin/users/{user}/toggle-suspend', [AdminUserController::class, 'toggleSuspend'])->name('admin.users.toggle-suspend');
+        Route::patch('/admin/users/{user}/toggle-verification', [AdminUserController::class, 'toggleVerification'])->name('admin.users.toggle-verification');
         Route::delete('/admin/users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
 
         // Announcement / Broadcast Management

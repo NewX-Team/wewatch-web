@@ -35,7 +35,7 @@
             <!-- Left: Brand Logo & Links -->
             <div class="flex items-center gap-6">
                 <!-- Brand -->
-                <a href="{{ route('user.dashboard') }}" class="flex items-center gap-2.5 group shrink-0">
+                <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : route('user.dashboard') }}" class="flex items-center gap-2.5 group shrink-0">
                     <div class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-black text-sm text-white tracking-tighter shadow-md transition group-hover:scale-105">
                         W
                     </div>
@@ -46,7 +46,7 @@
 
                 <!-- Navigation Links -->
                 <div class="flex items-center space-x-1 sm:space-x-2 text-xs font-bold">
-                    <a href="{{ route('user.dashboard') }}" class="px-3 py-1.5 rounded-lg bg-red-600/15 text-red-400 border border-red-600/30 transition">
+                    <a href="{{ Auth::user()->isSuperAdmin() ? route('admin.dashboard') : route('user.dashboard') }}" class="px-3 py-1.5 rounded-lg bg-red-600/15 text-red-400 border border-red-600/30 transition">
                         Home
                     </a>
                     <a href="{{ route('favorites.index') }}" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
@@ -192,14 +192,37 @@
                                     </div>
                                 </div>
 
-                                <div class="p-3.5 space-y-1.5">
-                                    <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">{{ $movie->genre }}</span>
-                                    <h3 class="font-bold text-white text-xs truncate group-hover:text-red-400 transition">{{ $movie->title }}</h3>
-                                    <div class="flex items-center justify-between text-[10px] text-zinc-400 border-t border-zinc-800/80 pt-2 mt-2">
-                                        <span>{{ $movie->episodes->count() }} Episode</span>
-                                        <div class="flex items-center gap-1 font-bold text-zinc-200">
-                                            <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                            <span>{{ $movie->rating }}</span>
+                                <div class="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-[10px] font-bold text-red-500 uppercase tracking-wide">{{ $movie->genre }}</span>
+                                        <h3 class="font-bold text-white text-xs truncate group-hover:text-red-400 transition">{{ $movie->title }}</h3>
+                                    </div>
+
+                                    <div class="pt-2 border-t border-zinc-800/80 space-y-2">
+                                        @if($movie->creator)
+                                            <div class="flex items-center gap-2 text-[11px] min-w-0">
+                                                <div class="w-5 h-5 rounded-full bg-red-600 text-white font-black text-[9px] flex items-center justify-center shrink-0 overflow-hidden border border-zinc-800">
+                                                    @if(!empty($movie->creator->avatar_url))
+                                                        <img src="{{ asset($movie->creator->avatar_url) }}" alt="{{ $movie->creator->name }}" class="w-full h-full object-cover">
+                                                    @else
+                                                        {{ strtoupper(substr($movie->creator->name, 0, 1)) }}
+                                                    @endif
+                                                </div>
+                                                <span class="text-zinc-300 font-semibold truncate hover:text-red-400 transition">
+                                                    {{ $movie->creator->name }}
+                                                </span>
+                                                @if($movie->creator->isVerified())
+                                                    <svg class="w-3.5 h-3.5 fill-blue-500 shrink-0" title="Kreator Terverifikasi" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        <div class="flex items-center justify-between text-[10px] text-zinc-400">
+                                            <span>{{ $movie->episodes->count() }} Episode</span>
+                                            <div class="flex items-center gap-1 font-bold text-zinc-200">
+                                                <svg class="w-3 h-3 fill-amber-400" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                                <span>{{ $movie->rating }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

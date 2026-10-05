@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
+use App\Models\User;
 use Illuminate\View\View;
 
 class MovieController extends Controller
@@ -42,12 +43,16 @@ class MovieController extends Controller
                 ];
             }
 
+            $creatorSlug = $creatorUser ? $creatorUser->id : 1;
+
             $creatorData = [
                 'id' => $creatorUser ? $creatorUser->id : 1,
                 'name' => $creatorUser ? $creatorUser->name : 'Kreator Studio',
                 'handle' => $creatorUser ? ($creatorUser->handle ?: ('@'.strtolower(str_replace(' ', '', $creatorUser->name)))) : '@kreator',
+                'slug' => $creatorSlug,
                 'subscribers' => '0 Subscribers',
                 'avatar' => $creatorUser ? $creatorUser->avatar_url : null,
+                'is_verified' => $creatorUser ? $creatorUser->isVerified() : false,
             ];
 
             $movie = [
@@ -70,42 +75,37 @@ class MovieController extends Controller
                 'episodes' => $episodesArray,
             ];
 
-            return view('movies.show', compact('movie'));
+            // Fetch real registered users from DB for realistic comments section if available
+            $recentUsers = User::latest()->take(3)->get();
+            $initialComments = [];
+            $sampleCommentTexts = [
+                'Gokil sinematografi nya dapet banget vibes-nya! Episode selanjutnya paling epic pertarungannya 🔥',
+                'Editing suara dan soundtracknya juara sih, pas banget dikombinasiin sama visualnya.',
+                'Alur ceritanya padat dan ga bertele-tele. Ditunggu kelanjutan episode selanjutnya min!',
+            ];
+
+            foreach ($recentUsers as $idx => $rUser) {
+                $initialComments[] = [
+                    'id' => $rUser->id,
+                    'name' => $rUser->name,
+                    'initial' => strtoupper(substr($rUser->name, 0, 1)),
+                    'color' => $idx === 0 ? 'bg-red-600' : ($idx === 1 ? 'bg-purple-600' : 'bg-emerald-600'),
+                    'time' => (($idx + 1) * 2).'h ago',
+                    'content' => $sampleCommentTexts[$idx % count($sampleCommentTexts)],
+                    'likes' => (3 - $idx) * 4,
+                    'liked' => false,
+                ];
+            }
+
+            return view('movies.show', compact('movie', 'initialComments'));
         }
 
-        // 2. Fallback for legacy static sample titles
-        $movies = [
-            'cyberpunk-shadows' => [
-                'id' => 'cyberpunk-shadows',
-                'title' => 'Cyberpunk Shadows',
-                'year' => '2026',
-                'rating' => '4.9',
-                'match' => '99%',
-                'quality' => '4K ULTRA HD',
-                'duration' => '8 Episodes',
-                'category' => 'Sci-Fi Series',
-                'banner' => asset('images/hero_banner.jpg'),
-                'description' => 'In a neon-soaked dystopian future of 2099 Tokyo, three rogue operatives with cybernetic enhancements unite to infiltrate and dismantle the world\'s most dangerous mega-corporation before an AI weapon is unleashed upon humanity.',
-                'director' => 'Elena Vance',
-                'cast' => 'Kaito Tanaka, Sarah Connor, Jax Thorne',
-                'studio' => 'NeoTokyo Studios',
-                'creator' => [
-                    'id' => 1,
-                    'name' => 'NeoTokyo Studios',
-                    'handle' => '@neotokyostudios',
-                    'subscribers' => '128.5K Subscribers',
-                    'avatar' => null,
-                ],
-                'genres' => ['Sci-Fi', 'Cyberpunk', 'Dystopian', 'Action Thriller', 'Futuristic'],
-                'episodes' => [
-                    ['number' => 1, 'title' => 'Ep 1: Neon Genesis', 'duration' => '48m', 'thumb' => asset('images/hero_banner.jpg')],
-                    ['number' => 2, 'title' => 'Ep 2: Cybernetic Pulse', 'duration' => '52m', 'thumb' => asset('images/poster_action.jpg')],
-                ],
-            ],
-        ];
+        // Fallback for legacy test route or missing movies: get first published movie or create mock
+        $fallbackMovie = Movie::with(['creator', 'episodes'])->first();
+        if ($fallbackMovie) {
+            return $this->show((string) $fallbackMovie->id);
+        }
 
-        $movie = $movies[$id] ?? $movies['cyberpunk-shadows'];
-
-        return view('movies.show', compact('movie'));
+        return redirect()->route('user.dashboard');
     }
 }
