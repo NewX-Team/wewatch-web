@@ -158,26 +158,34 @@
                     </div>
 
                     <!-- Creator Profile Card (Clickable to Creator Channel Page) -->
-                    <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800/90 hover:border-zinc-700 transition">
-                        <a href="{{ route('creators.show', $movie['creator']['id'] ?? 'neotokyo-studios') }}" class="flex items-center gap-3 group">
-                            <!-- WA-Style Basic Kosongan Avatar SVG -->
-                            <div class="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-700 group-hover:border-red-600 transition flex items-center justify-center overflow-hidden shrink-0">
-                                <svg class="w-7 h-7 text-zinc-400 translate-y-0.5 fill-current" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
+                    <div class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800/90 hover:border-red-600/50 transition duration-300 shadow-xl group">
+                        <a href="{{ route('creators.show', $movie['creator']['id']) }}" class="flex items-center gap-3.5 flex-1 min-w-0">
+                            <!-- Avatar Image or Letter Initial -->
+                            <div class="w-11 h-11 rounded-full bg-red-600 border-2 border-zinc-950 shadow-lg flex items-center justify-center shrink-0 overflow-hidden text-white font-black text-lg group-hover:scale-105 transition">
+                                @if(!empty($movie['creator']['avatar']))
+                                    <img src="{{ asset($movie['creator']['avatar']) }}" alt="{{ $movie['creator']['name'] }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr($movie['creator']['name'] ?? 'K', 0, 1)) }}
+                                @endif
                             </div>
-                            <div>
+                            <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-1.5">
-                                    <h4 class="font-bold text-white text-xs group-hover:text-red-400 transition">{{ $movie['creator']['name'] ?? $movie['studio'] }}</h4>
-                                    <svg class="w-3.5 h-3.5 text-red-500 fill-current" viewBox="0 0 24 24" title="Verified Creator"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    <h4 class="font-black text-white text-xs truncate group-hover:text-red-400 transition">{{ $movie['creator']['name'] }}</h4>
+                                    <span class="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0" title="Verified Creator Channel">
+                                        <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    </span>
                                 </div>
-                                <span class="text-[10px] text-zinc-400 font-mono">{{ $movie['creator']['subscribers'] ?? '128.5K Subscribers' }}</span>
+                                <div class="flex items-center gap-2 text-[10px] text-zinc-400 font-mono truncate mt-0.5">
+                                    <span class="text-zinc-300 font-bold">{{ $movie['creator']['handle'] }}</span>
+                                    <span>•</span>
+                                    <span class="text-emerald-400 font-bold">{{ $movie['creator']['subscribers'] }}</span>
+                                </div>
                             </div>
                         </a>
 
-                        <a href="{{ route('creators.show', $movie['creator']['id'] ?? 'neotokyo-studios') }}" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold transition flex items-center gap-1">
-                            <span>Visit Channel</span>
-                            <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                        <a href="{{ route('creators.show', $movie['creator']['id']) }}" class="px-3.5 py-2 rounded-xl bg-red-600/10 border border-red-600/30 hover:bg-red-600 hover:text-white text-red-400 text-xs font-extrabold transition shrink-0 flex items-center gap-1.5">
+                            <span>Buka Channel</span>
+                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
                         </a>
                     </div>
 

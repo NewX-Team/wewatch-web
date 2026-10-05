@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Movie;
 use Illuminate\View\View;
 
 class MovieController extends Controller
@@ -11,6 +12,68 @@ class MovieController extends Controller
      */
     public function show(string $id): View
     {
+        // 1. First, search in Database for real Creator-published movie
+        $movieModel = Movie::with(['creator', 'episodes'])
+            ->where('id', $id)
+            ->orWhere('slug', $id)
+            ->first();
+
+        if ($movieModel) {
+            $creatorUser = $movieModel->creator;
+
+            $episodesArray = [];
+            if ($movieModel->episodes->isNotEmpty()) {
+                foreach ($movieModel->episodes as $index => $ep) {
+                    $episodesArray[] = [
+                        'number' => $ep->episode_number ?: ($index + 1),
+                        'title' => $ep->title ?: ('Episode '.($index + 1)),
+                        'duration' => $ep->duration ?: '45m',
+                        'thumb' => asset($movieModel->poster_url ?: 'images/hero_banner.jpg'),
+                        'video_url' => $ep->video_url,
+                    ];
+                }
+            } else {
+                $episodesArray[] = [
+                    'number' => 1,
+                    'title' => 'Episode 1: '.$movieModel->title,
+                    'duration' => '45m',
+                    'thumb' => asset($movieModel->poster_url ?: 'images/hero_banner.jpg'),
+                    'video_url' => null,
+                ];
+            }
+
+            $creatorData = [
+                'id' => $creatorUser ? $creatorUser->id : 1,
+                'name' => $creatorUser ? $creatorUser->name : 'Kreator Studio',
+                'handle' => $creatorUser ? ($creatorUser->handle ?: ('@'.strtolower(str_replace(' ', '', $creatorUser->name)))) : '@kreator',
+                'subscribers' => '0 Subscribers',
+                'avatar' => $creatorUser ? $creatorUser->avatar_url : null,
+            ];
+
+            $movie = [
+                'id' => $movieModel->id,
+                'slug' => $movieModel->slug ?: $movieModel->id,
+                'title' => $movieModel->title,
+                'year' => $movieModel->release_year ?: date('Y'),
+                'rating' => number_format($movieModel->rating ?: 4.9, 1),
+                'match' => '99%',
+                'quality' => '4K ULTRA HD',
+                'duration' => $movieModel->episodes->count().' Episode',
+                'category' => $movieModel->genre ?: 'Sinema',
+                'banner' => asset($movieModel->poster_url ?: ($movieModel->banner_url ?: 'images/hero_banner.jpg')),
+                'description' => $movieModel->description ?: 'Tidak ada deskripsi sinopsis film.',
+                'director' => $creatorUser ? $creatorUser->name : 'WeWatch Director',
+                'cast' => 'Pemeran Sinematik WeWatch',
+                'studio' => $creatorUser ? $creatorUser->name : 'WeWatch Studio',
+                'creator' => $creatorData,
+                'genres' => array_filter(explode(',', $movieModel->genre ?: 'Film,Sinema')),
+                'episodes' => $episodesArray,
+            ];
+
+            return view('movies.show', compact('movie'));
+        }
+
+        // 2. Fallback for legacy static sample titles
         $movies = [
             'cyberpunk-shadows' => [
                 'id' => 'cyberpunk-shadows',
@@ -27,98 +90,16 @@ class MovieController extends Controller
                 'cast' => 'Kaito Tanaka, Sarah Connor, Jax Thorne',
                 'studio' => 'NeoTokyo Studios',
                 'creator' => [
-                    'id' => 'neotokyo-studios',
+                    'id' => 1,
                     'name' => 'NeoTokyo Studios',
                     'handle' => '@neotokyostudios',
                     'subscribers' => '128.5K Subscribers',
+                    'avatar' => null,
                 ],
                 'genres' => ['Sci-Fi', 'Cyberpunk', 'Dystopian', 'Action Thriller', 'Futuristic'],
                 'episodes' => [
                     ['number' => 1, 'title' => 'Ep 1: Neon Genesis', 'duration' => '48m', 'thumb' => asset('images/hero_banner.jpg')],
                     ['number' => 2, 'title' => 'Ep 2: Cybernetic Pulse', 'duration' => '52m', 'thumb' => asset('images/poster_action.jpg')],
-                    ['number' => 3, 'title' => 'Ep 3: The Ghost Core', 'duration' => '45m', 'thumb' => asset('images/poster_fantasy.jpg')],
-                    ['number' => 4, 'title' => 'Ep 4: Dystopian Breach', 'duration' => '50m', 'thumb' => asset('images/poster_documentary.jpg')],
-                    ['number' => 5, 'title' => 'Ep 5: Protocol Overdrive', 'duration' => '56m', 'thumb' => asset('images/hero_banner.jpg')],
-                ],
-            ],
-            'midnight-drift' => [
-                'id' => 'midnight-drift',
-                'title' => 'Midnight Drift',
-                'year' => '2026',
-                'rating' => '4.9',
-                'match' => '97%',
-                'quality' => 'FULL HD',
-                'duration' => '1h 52m',
-                'category' => 'Action Thriller',
-                'banner' => asset('images/poster_action.jpg'),
-                'description' => 'High-stakes underground street racing through futuristic neon Tokyo highways where outlaw drivers compete in customized hypercars with rocket boosters for supreme glory and survival.',
-                'director' => 'Marcus Sterling',
-                'cast' => 'Kenji Takahashi, Maya Lin, Leo Vance',
-                'studio' => 'Apex Racing Films',
-                'creator' => [
-                    'id' => 'neotokyo-studios',
-                    'name' => 'Apex Racing Films',
-                    'handle' => '@apexracing',
-                    'subscribers' => '95K Subscribers',
-                ],
-                'genres' => ['Action', 'Underground Racing', 'Thriller', 'Speed', 'Tokyo Night'],
-                'episodes' => [
-                    ['number' => 1, 'title' => 'Feature Movie: Full Cut', 'duration' => '1h 52m', 'thumb' => asset('images/poster_action.jpg')],
-                    ['number' => 2, 'title' => 'Bonus: Directors Commentary', 'duration' => '25m', 'thumb' => asset('images/hero_banner.jpg')],
-                ],
-            ],
-            'deep-ocean-abyss' => [
-                'id' => 'deep-ocean-abyss',
-                'title' => 'Deep Ocean Abyss 4K',
-                'year' => '2026',
-                'rating' => '5.0',
-                'match' => '98%',
-                'quality' => '4K ULTRA HD',
-                'duration' => '1h 24m',
-                'category' => 'Documentary',
-                'banner' => asset('images/poster_documentary.jpg'),
-                'description' => 'A breathtaking cinematic journey into the deepest marine trenches of the Mariana Trench, featuring bioluminescent sea creatures, ancient underwater caverns, and alien-like ocean ecosystems.',
-                'director' => 'Dr. Aris Thorne',
-                'cast' => 'Narrated by David Attenborough',
-                'studio' => 'Oceanic Horizon Docs',
-                'creator' => [
-                    'id' => 'neotokyo-studios',
-                    'name' => 'Oceanic Horizon Docs',
-                    'handle' => '@oceanichorizon',
-                    'subscribers' => '210K Subscribers',
-                ],
-                'genres' => ['Documentary', 'Nature', 'Oceanic', 'Bioluminescence', 'Exploration'],
-                'episodes' => [
-                    ['number' => 1, 'title' => 'Feature Documentary: Abyss', 'duration' => '1h 24m', 'thumb' => asset('images/poster_documentary.jpg')],
-                    ['number' => 2, 'title' => 'Behind the Scenes: Submersible Tech', 'duration' => '32m', 'thumb' => asset('images/poster_fantasy.jpg')],
-                ],
-            ],
-            'realm-of-eldoria' => [
-                'id' => 'realm-of-eldoria',
-                'title' => 'Realm of Eldoria',
-                'year' => '2026',
-                'rating' => '4.8',
-                'match' => '95%',
-                'quality' => 'FULL HD',
-                'duration' => '10 Episodes',
-                'category' => 'Fantasy Epic',
-                'banner' => asset('images/poster_fantasy.jpg'),
-                'description' => 'A dormant millennium war reawakens as a young knight claims the ancient glowing citadel and unleashes mythical elemental beasts against an encroaching dark legion.',
-                'director' => 'Cedric Vance',
-                'cast' => 'Arthur Pendelton, Freya Frost, Gareth Blackwood',
-                'studio' => 'Mythic Citadel Media',
-                'creator' => [
-                    'id' => 'neotokyo-studios',
-                    'name' => 'Mythic Citadel Media',
-                    'handle' => '@mythiccitadel',
-                    'subscribers' => '175K Subscribers',
-                ],
-                'genres' => ['Fantasy', 'Epic Saga', 'Mythology', 'Knights', 'Magic'],
-                'episodes' => [
-                    ['number' => 1, 'title' => 'Ep 1: The Citadel Awakes', 'duration' => '54m', 'thumb' => asset('images/poster_fantasy.jpg')],
-                    ['number' => 2, 'title' => 'Ep 2: Flame of Eldoria', 'duration' => '49m', 'thumb' => asset('images/poster_action.jpg')],
-                    ['number' => 3, 'title' => 'Ep 3: The Dark Encroach', 'duration' => '51m', 'thumb' => asset('images/hero_banner.jpg')],
-                    ['number' => 4, 'title' => 'Ep 4: Blade of Light', 'duration' => '58m', 'thumb' => asset('images/poster_documentary.jpg')],
                 ],
             ],
         ];
