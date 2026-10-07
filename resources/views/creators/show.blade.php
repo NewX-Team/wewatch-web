@@ -125,11 +125,29 @@
                             @csrf
                             <button type="submit"
                                     :class="isSubscribed
-                                        ? 'bg-zinc-800 text-zinc-200 border-zinc-700 hover:bg-zinc-700'
-                                        : 'bg-red-600 hover:bg-red-500 text-white border-red-500/50 shadow-lg shadow-red-600/20'"
-                                    class="px-6 py-2.5 rounded-xl border text-xs font-extrabold tracking-wider uppercase transition transform active:scale-95 flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full" :class="isSubscribed ? 'bg-emerald-400' : 'bg-white animate-pulse'"></span>
-                                <span x-text="isSubscribed ? 'SUBSCRIBED' : 'SUBSCRIBE'"></span>
+                                        ? 'bg-zinc-900 border-zinc-700/80 text-zinc-200 hover:border-red-600/50 hover:text-red-400 shadow-md'
+                                        : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white border-red-500/30 shadow-lg shadow-red-600/30 hover:scale-105'"
+                                    class="px-6 py-2.5 rounded-full border text-xs font-black tracking-wider uppercase transition-all duration-300 active:scale-95 flex items-center gap-2 relative group">
+                                <template x-if="!isSubscribed">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 fill-current group-hover:rotate-12 transition duration-300" viewBox="0 0 24 24">
+                                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                                        </svg>
+                                        <span>SUBSCRIBE</span>
+                                    </div>
+                                </template>
+                                <template x-if="isSubscribed">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 fill-amber-400 animate-pulse" viewBox="0 0 24 24">
+                                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                                        </svg>
+                                        <svg class="w-3.5 h-3.5 fill-blue-500" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                        </svg>
+                                        <span class="group-hover:hidden">SUBSCRIBED</span>
+                                        <span class="hidden group-hover:inline text-red-400 font-extrabold">BATAL</span>
+                                    </div>
+                                </template>
                             </button>
                         </form>
                     @endif

@@ -17,7 +17,7 @@
     <body class="font-sans antialiased bg-zinc-950 text-zinc-100 selection:bg-red-600 selection:text-white min-h-screen overflow-x-hidden"
           x-data="{
               isPlaying: false,
-              isFavorited: false,
+              isFavorited: {{ !empty($movie['is_favorited']) ? 'true' : 'false' }},
               isSubscribed: {{ $movie['creator']['is_subscribed'] ? 'true' : 'false' }},
               creatorSubscribers: '{{ $movie['creator']['subscribers'] }}',
               userTier: '{{ Auth::user()->getEffectiveSubscriptionTier() }}',
@@ -27,6 +27,22 @@
               progress: 24,
               newCommentText: '',
               comments: {{ json_encode($initialComments ?? []) }},
+              toggleFavorite() {
+                  fetch('{{ route('movies.toggle-favorite', $movie['id']) }}', {
+                      method: 'POST',
+                      headers: {
+                          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                          'Accept': 'application/json',
+                          'X-Requested-With': 'XMLHttpRequest'
+                      }
+                  })
+                  .then(res => res.json())
+                  .then(data => {
+                      if (data.status === 'success') {
+                          this.isFavorited = data.is_favorite;
+                      }
+                  });
+              },
               toggleSubscribe() {
                   fetch('{{ route('creators.toggle-subscription', $movie['creator']['id']) }}', {
                       method: 'POST',
@@ -224,20 +240,45 @@
 
                     <!-- Action Buttons: Favorites & Subscribe -->
                     <div class="flex items-center gap-3 pt-2">
-                        <button @click="isFavorited = !isFavorited"
-                                :class="isFavorited ? 'bg-red-600/20 text-red-400 border-red-600/40' : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:text-white'"
-                                class="flex-1 py-3 px-4 rounded-xl border text-xs font-bold transition shadow-sm flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                            <span x-text="isFavorited ? 'In Favorites' : 'Add to Favorites'"></span>
+                        <button @click="toggleFavorite()"
+                                :class="isFavorited
+                                    ? 'bg-red-600/20 text-red-400 border-red-600/50 shadow-red-600/20 shadow-lg scale-105'
+                                    : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:text-white hover:border-zinc-700'"
+                                class="flex-1 py-3 px-4 rounded-2xl border text-xs font-black transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 relative group overflow-hidden">
+                            <svg :class="isFavorited ? 'fill-red-500 scale-110 animate-pulse' : 'fill-zinc-400 group-hover:scale-110'"
+                                 class="w-4 h-4 transition duration-300" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            <span x-text="isFavorited ? 'Tersimpan di Favorit ♥' : 'Tambah ke Favorit'"></span>
                         </button>
 
                         <form method="POST" action="{{ route('creators.toggle-subscription', $movie['creator']['id']) }}" @submit.prevent="toggleSubscribe()" class="flex-1">
                             @csrf
                             <button type="submit"
-                                    :class="isSubscribed ? 'bg-emerald-600/20 text-emerald-400 border-emerald-600/40' : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:text-white'"
-                                    class="w-full py-3 px-4 rounded-xl border text-xs font-bold transition shadow-sm flex items-center justify-center gap-2">
-                                <span class="w-2 h-2 rounded-full" :class="isSubscribed ? 'bg-emerald-400' : 'bg-zinc-500'"></span>
-                                <span x-text="isSubscribed ? 'Subscribed to Creator' : 'Subscribe to Creator'"></span>
+                                    :class="isSubscribed
+                                        ? 'bg-zinc-900 border-zinc-700/80 text-zinc-200 hover:border-red-600/50 hover:text-red-400 shadow-md'
+                                        : 'bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white border-red-500/30 shadow-lg shadow-red-600/30 hover:scale-[1.02]'"
+                                    class="w-full py-3 px-4 rounded-2xl border text-xs font-black tracking-wide uppercase transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 relative group">
+                                <template x-if="!isSubscribed">
+                                    <div class="flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 fill-current group-hover:rotate-12 transition duration-300" viewBox="0 0 24 24">
+                                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                                        </svg>
+                                        <span>SUBSCRIBE</span>
+                                    </div>
+                                </template>
+                                <template x-if="isSubscribed">
+                                    <div class="flex items-center gap-1.5 text-zinc-300">
+                                        <svg class="w-4 h-4 fill-amber-400 animate-pulse" viewBox="0 0 24 24">
+                                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                                        </svg>
+                                        <svg class="w-3.5 h-3.5 fill-blue-500" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                        </svg>
+                                        <span class="group-hover:hidden">SUBSCRIBED</span>
+                                        <span class="hidden group-hover:inline text-red-400">BATAL</span>
+                                    </div>
+                                </template>
                             </button>
                         </form>
                     </div>

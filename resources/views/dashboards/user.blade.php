@@ -179,9 +179,24 @@
                                         {{ $movie->status_label }}
                                     </div>
 
-                                    <!-- Tier Badge -->
-                                    <div class="absolute top-2 right-2 px-2 py-0.5 rounded bg-zinc-950/90 text-red-400 font-mono text-[9px] font-bold border border-zinc-800 uppercase">
-                                        {{ $movie->access_tier }}
+                                    <!-- Tier Badge & Quick Favorite Toggle -->
+                                    <div class="absolute top-2 right-2 flex items-center gap-1.5 z-20" x-data="{ isFav: {{ $movie->isFavoritedBy(Auth::user()) ? 'true' : 'false' }} }">
+                                        <button type="button"
+                                                @click.prevent.stop="
+                                                    fetch('{{ route('movies.toggle-favorite', $movie->id) }}', {
+                                                        method: 'POST',
+                                                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                                                    }).then(r => r.json()).then(d => { if(d.status==='success') isFav = d.is_favorite; })
+                                                "
+                                                title="Tambah / Hapus Favorit"
+                                                :class="isFav ? 'bg-red-600 text-white shadow-red-600/50 scale-105' : 'bg-zinc-950/80 text-zinc-400 hover:text-white border-zinc-800'"
+                                                class="w-7 h-7 rounded-full border flex items-center justify-center backdrop-blur-md transition transform active:scale-75 shadow-lg">
+                                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                        </button>
+
+                                        <div class="px-2 py-0.5 rounded bg-zinc-950/90 text-red-400 font-mono text-[9px] font-bold border border-zinc-800 uppercase">
+                                            {{ $movie->access_tier }}
+                                        </div>
                                     </div>
 
                                     <!-- Play Hover Overlay -->
