@@ -47,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
+    Route::post('/movies/{movie}/toggle-favorite', [FavoriteController::class, 'toggle'])->name('movies.toggle-favorite');
     Route::get('/creators/{id}', [CreatorController::class, 'show'])->name('creators.show');
     Route::post('/creators/{user}/toggle-subscription', [CreatorSubscriptionController::class, 'toggle'])->name('creators.toggle-subscription');
     Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');

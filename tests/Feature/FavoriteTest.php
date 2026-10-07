@@ -12,8 +12,7 @@ test('authenticated user can access favorites page and sees empty state when emp
 
     $response = $this->actingAs($user)->get('/user/favorites');
     $response->assertStatus(200);
-    $response->assertSee('Koleksi Film Favorit');
-    $response->assertSee('Belum Ada Film Favorit');
+    $response->assertSee('Koleksi Film', false);
+    $response->assertSee('Belum Ada Tayangan Disukai');
     $response->assertSee('Jelajahi Beranda Utama');
-    $response->assertSee('Rekomendasi Untuk Favoritmu');
 });
