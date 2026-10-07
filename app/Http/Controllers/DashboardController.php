@@ -52,17 +52,20 @@ class DashboardController extends Controller
     }
 
     /**
-     * Creator Studio Dashboard view with creator's published movies.
+     * Creator Studio Dashboard view with creator's published movies & real subscribers.
      */
     public function creator(Request $request): View
     {
         $movies = $request->user()->movies()->with('episodes')->orderBy('id', 'desc')->get();
+        $subscribersCount = $request->user()->subscribersCount();
+        $subscribersFormatted = $request->user()->subscribersCountFormatted();
+        $recentSubscribers = $request->user()->subscribers()->latest()->take(5)->get();
 
-        return view('dashboards.creator', compact('movies'));
+        return view('dashboards.creator', compact('movies', 'subscribersCount', 'subscribersFormatted', 'recentSubscribers'));
     }
 
     /**
-     * Standard User Dashboard view with creator published movies.
+     * Standard User Dashboard view with creator published movies and subscribed creator channels.
      */
     public function user(Request $request): View
     {
@@ -90,6 +93,8 @@ class DashboardController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        return view('dashboards.user', compact('announcements', 'movies'));
+        $subscribedCreators = $user->subscribedCreators()->withCount(['subscribers', 'movies'])->get();
+
+        return view('dashboards.user', compact('announcements', 'movies', 'subscribedCreators'));
     }
 }

@@ -62,13 +62,17 @@ class CreatorController extends Controller
             $creatorHandle = '@'.$creatorHandle;
         }
 
+        $isSubscribed = $request->user() ? $request->user()->isSubscribedTo($user->id) : false;
+
         $creator = [
             'id' => $user->id,
             'slug' => $user->handle ? ltrim($user->handle, '@') : Str::slug($user->name),
             'name' => $user->name,
             'email' => $user->email,
             'handle' => $creatorHandle,
-            'subscribers' => '0 Subscribers',
+            'subscribers' => $user->subscribersCountFormatted(),
+            'subscribers_count' => $user->subscribersCount(),
+            'is_subscribed' => $isSubscribed,
             'uploads_count' => $movies->count(),
             'joined_date' => $user->created_at ? $user->created_at->format('F Y') : date('F Y'),
             'bio' => $user->bio ?: ('Channel Resmi Kreator '.$user->name.' di WeWatch Cinema. Menyajikan tayangan sinematik berkualitas tinggi.'),
@@ -78,6 +82,6 @@ class CreatorController extends Controller
             'is_verified' => $user->isVerified(),
         ];
 
-        return view('creators.show', compact('creator', 'movies', 'user'));
+        return view('creators.show', compact('creator', 'movies', 'user', 'isSubscribed'));
     }
 }

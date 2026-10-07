@@ -28,7 +28,8 @@ class MovieController extends Controller
                     $episodesArray[] = [
                         'number' => $ep->episode_number ?: ($index + 1),
                         'title' => $ep->title ?: ('Episode '.($index + 1)),
-                        'duration' => $ep->duration ?: '45m',
+                        'duration' => $ep->duration ?: 'Auto',
+                        'access_tier' => strtolower($ep->access_tier ?: 'free'),
                         'thumb' => asset($movieModel->poster_url ?: 'images/hero_banner.jpg'),
                         'video_url' => $ep->video_url,
                     ];
@@ -37,20 +38,23 @@ class MovieController extends Controller
                 $episodesArray[] = [
                     'number' => 1,
                     'title' => 'Episode 1: '.$movieModel->title,
-                    'duration' => '45m',
+                    'duration' => 'Auto',
+                    'access_tier' => strtolower($movieModel->access_tier ?: 'free'),
                     'thumb' => asset($movieModel->poster_url ?: 'images/hero_banner.jpg'),
                     'video_url' => null,
                 ];
             }
 
-            $creatorSlug = $creatorUser ? $creatorUser->id : 1;
+            $creatorSlug = $creatorUser ? ($creatorUser->handle ? ltrim($creatorUser->handle, '@') : $creatorUser->id) : 1;
+            $isSubscribed = (auth()->check() && $creatorUser) ? auth()->user()->isSubscribedTo($creatorUser->id) : false;
 
             $creatorData = [
                 'id' => $creatorUser ? $creatorUser->id : 1,
                 'name' => $creatorUser ? $creatorUser->name : 'Kreator Studio',
                 'handle' => $creatorUser ? ($creatorUser->handle ?: ('@'.strtolower(str_replace(' ', '', $creatorUser->name)))) : '@kreator',
                 'slug' => $creatorSlug,
-                'subscribers' => '0 Subscribers',
+                'subscribers' => $creatorUser ? $creatorUser->subscribersCountFormatted() : '0 Subscribers',
+                'is_subscribed' => $isSubscribed,
                 'avatar' => $creatorUser ? $creatorUser->avatar_url : null,
                 'is_verified' => $creatorUser ? $creatorUser->isVerified() : false,
             ];
