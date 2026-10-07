@@ -47,6 +47,7 @@ class MovieController extends Controller
 
             $creatorSlug = $creatorUser ? ($creatorUser->handle ? ltrim($creatorUser->handle, '@') : $creatorUser->id) : 1;
             $isSubscribed = (auth()->check() && $creatorUser) ? auth()->user()->isSubscribedTo($creatorUser->id) : false;
+            $isFavorited = (auth()->check() && $movieModel) ? auth()->user()->isFavorite($movieModel) : false;
 
             $creatorData = [
                 'id' => $creatorUser ? $creatorUser->id : 1,
@@ -77,6 +78,7 @@ class MovieController extends Controller
                 'creator' => $creatorData,
                 'genres' => array_filter(explode(',', $movieModel->genre ?: 'Film,Sinema')),
                 'episodes' => $episodesArray,
+                'is_favorited' => $isFavorited,
             ];
 
             // Fetch real registered users from DB for realistic comments section if available

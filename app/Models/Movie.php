@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
@@ -62,6 +63,36 @@ class Movie extends Model
     public function episodes(): HasMany
     {
         return $this->hasMany(Episode::class)->orderBy('episode_number', 'asc');
+    }
+
+    /**
+     * Users who favorited this movie.
+     */
+    public function favoritedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'movie_id', 'user_id')->withTimestamps();
+    }
+
+    /**
+     * Check if movie is favorited by user.
+     */
+    public function isFavoritedBy(int|User|null $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        $userId = $user instanceof User ? $user->id : (int) $user;
+
+        return $this->favoritedByUsers()->where('user_id', $userId)->exists();
+    }
+
+    /**
+     * Get total favorites count.
+     */
+    public function favoritesCount(): int
+    {
+        return $this->favoritedByUsers()->count();
     }
 
     /**

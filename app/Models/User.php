@@ -176,4 +176,33 @@ class User extends Authenticatable
 
         return $count === 1 ? '1 Subscriber' : $count.' Subscribers';
     }
+
+    /**
+     * Movies favorited by this user.
+     */
+    public function favoriteMovies(): BelongsToMany
+    {
+        return $this->belongsToMany(Movie::class, 'favorites', 'user_id', 'movie_id')->withTimestamps();
+    }
+
+    /**
+     * Check if user has favorited a movie.
+     */
+    public function isFavorite(int|Movie $movie): bool
+    {
+        $movieId = $movie instanceof Movie ? $movie->id : (int) $movie;
+
+        return $this->favoriteMovies()->where('movie_id', $movieId)->exists();
+    }
+
+    /**
+     * Toggle favorite status for a movie.
+     */
+    public function toggleFavorite(int|Movie $movie): bool
+    {
+        $movieId = $movie instanceof Movie ? $movie->id : (int) $movie;
+        $result = $this->favoriteMovies()->toggle($movieId);
+
+        return count($result['attached']) > 0;
+    }
 }
