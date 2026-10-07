@@ -151,16 +151,16 @@
                     <div class="text-[11px] text-zinc-400 font-medium">Tersedia di katalog utama</div>
                 </div>
 
-                <!-- Metric 2: Ongoing Series -->
+                <!-- Metric 2: Real-Time Subscribers -->
                 <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-2xl p-5 space-y-2 shadow-lg relative overflow-hidden backdrop-blur-xl group hover:border-zinc-700 transition">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Status Ongoing</span>
-                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Subscriber Real-Time</span>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
                         </div>
                     </div>
-                    <div class="text-3xl font-black text-amber-400 font-mono tracking-tight">{{ $movies->filter(fn($m) => $m->isOngoing())->count() }} <span class="text-xs text-zinc-400 font-normal">Judul</span></div>
-                    <div class="text-[11px] text-amber-400/80 font-medium">Siap tambah episode minggu depan</div>
+                    <div class="text-3xl font-black text-emerald-400 font-mono tracking-tight">{{ $subscribersCount ?? 0 }} <span class="text-xs text-zinc-400 font-normal">Penonton</span></div>
+                    <div class="text-[11px] text-emerald-400/80 font-medium">Berlangganan channel kamu</div>
                 </div>
 
                 <!-- Metric 3: Total Episodes -->
@@ -459,13 +459,21 @@
                             <span>Episode Perdana (Episode #1)</span>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Judul Episode 1</label>
                                 <input type="text" name="initial_episode_title" placeholder="Ep 1: Neon Genesis" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-zinc-100 focus:outline-none focus:border-red-600">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Link Embed Video (URL / YouTube)</label>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Akses Episode 1 *</label>
+                                <select name="initial_episode_access_tier" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-zinc-100 focus:outline-none focus:border-red-600">
+                                    <option value="free">Free (Gratis Semua Penonton)</option>
+                                    <option value="pro">Pro Member (Pro & VIP)</option>
+                                    <option value="vip">VIP Luxury (VIP Only)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Link Embed Video (URL)</label>
                                 <input type="text" name="video_url" placeholder="https://www.youtube.com/embed/..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-zinc-100 focus:outline-none focus:border-red-600">
                             </div>
                         </div>
@@ -507,16 +515,36 @@
                         <input type="text" name="title" required :placeholder="'Contoh: Ep ' + (selectedMovie ? selectedMovie.next_ep : '') + ': Pertempuran Sengit'" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-red-600 transition">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300 mb-1">Durasi Episode</label>
-                            <input type="text" name="duration" placeholder="Contoh: 48m" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-red-600 transition">
+                    <div>
+                        <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300 mb-1">Akses Episode Ini *</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center gap-2 cursor-pointer hover:border-emerald-500/60 transition">
+                                <input type="radio" name="access_tier" value="free" checked class="text-emerald-600 focus:ring-0 bg-zinc-900 border-zinc-700">
+                                <div>
+                                    <div class="text-xs font-bold text-emerald-400">FREE</div>
+                                    <div class="text-[9px] text-zinc-400">Semua Penonton</div>
+                                </div>
+                            </label>
+                            <label class="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center gap-2 cursor-pointer hover:border-red-500/60 transition">
+                                <input type="radio" name="access_tier" value="pro" class="text-red-600 focus:ring-0 bg-zinc-900 border-zinc-700">
+                                <div>
+                                    <div class="text-xs font-bold text-red-400">PRO</div>
+                                    <div class="text-[9px] text-zinc-400">Pro &amp; VIP User</div>
+                                </div>
+                            </label>
+                            <label class="p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center gap-2 cursor-pointer hover:border-amber-500/60 transition">
+                                <input type="radio" name="access_tier" value="vip" class="text-amber-500 focus:ring-0 bg-zinc-900 border-zinc-700">
+                                <div>
+                                    <div class="text-xs font-bold text-amber-300">VIP</div>
+                                    <div class="text-[9px] text-zinc-400">Khusus VIP Only</div>
+                                </div>
+                            </label>
                         </div>
+                    </div>
 
-                        <div>
-                            <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300 mb-1">Link Embed Video URL</label>
-                            <input type="text" name="video_url" placeholder="https://www.youtube.com/embed/..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-red-600 transition">
-                        </div>
+                    <div>
+                        <label class="block font-bold text-xs uppercase tracking-wider text-zinc-300 mb-1">Link Embed Video URL (Opsional)</label>
+                        <input type="text" name="video_url" placeholder="https://www.youtube.com/embed/..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-red-600 transition">
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-3 border-t border-zinc-800">

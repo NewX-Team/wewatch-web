@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\CreatorMovieController;
+use App\Http\Controllers\CreatorSubscriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\MovieController;
@@ -42,11 +43,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:user,creator,super_admin')->group(function () {
         Route::get('/user/dashboard', [DashboardController::class, 'user'])->name('user.dashboard');
         Route::get('/user/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+        Route::get('/user/subscriptions', [SubscriptionController::class, 'userSubscriptions'])->name('user.subscriptions');
     });
 
     Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
     Route::get('/creators/{id}', [CreatorController::class, 'show'])->name('creators.show');
+    Route::post('/creators/{user}/toggle-subscription', [CreatorSubscriptionController::class, 'toggle'])->name('creators.toggle-subscription');
     Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::post('/subscription/upgrade', [SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
 });
 
 Route::middleware('auth')->group(function () {

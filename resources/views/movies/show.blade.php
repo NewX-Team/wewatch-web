@@ -18,11 +18,46 @@
           x-data="{
               isPlaying: false,
               isFavorited: false,
-              isSubscribed: false,
-              activeEpisode: {{ json_encode($movie['episodes'][0] ?? ['number' => 1, 'title' => $movie['title'], 'duration' => $movie['duration'], 'thumb' => $movie['banner']]) }},
+              isSubscribed: {{ $movie['creator']['is_subscribed'] ? 'true' : 'false' }},
+              creatorSubscribers: '{{ $movie['creator']['subscribers'] }}',
+              userTier: '{{ Auth::user()->getEffectiveSubscriptionTier() }}',
+              showLockModal: false,
+              lockedEpTier: 'pro',
+              activeEpisode: {{ json_encode($movie['episodes'][0] ?? ['number' => 1, 'title' => $movie['title'], 'duration' => 'Auto', 'access_tier' => 'free', 'thumb' => $movie['banner']]) }},
               progress: 24,
               newCommentText: '',
               comments: {{ json_encode($initialComments ?? []) }},
+              toggleSubscribe() {
+                  fetch('{{ route('creators.toggle-subscription', $movie['creator']['id']) }}', {
+                      method: 'POST',
+                      headers: {
+                          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                          'Accept': 'application/json'
+                      }
+                  })
+                  .then(res => res.json())
+                  .then(data => {
+                      if (data.success) {
+                          this.isSubscribed = data.subscribed;
+                          this.creatorSubscribers = data.subscribers_formatted;
+                      }
+                  });
+              },
+              canAccess(epTier) {
+                  if (this.userTier === 'vip') return true;
+                  if (this.userTier === 'pro') return epTier === 'free' || epTier === 'pro';
+                  return epTier === 'free';
+              },
+              selectEpisode(ep) {
+                  if (this.canAccess(ep.access_tier || 'free')) {
+                      this.activeEpisode = ep;
+                      this.isPlaying = true;
+                      this.showLockModal = false;
+                  } else {
+                      this.lockedEpTier = ep.access_tier || 'pro';
+                      this.showLockModal = true;
+                  }
+              },
               addComment() {
                   if (this.newCommentText.trim() === '') return;
                   this.comments.unshift({
@@ -176,7 +211,7 @@
                                 <div class="flex items-center gap-2 text-[10px] text-zinc-400 font-mono truncate mt-0.5">
                                     <span class="text-zinc-300 font-bold">{{ $movie['creator']['handle'] }}</span>
                                     <span>•</span>
-                                    <span class="text-emerald-400 font-bold">{{ $movie['creator']['subscribers'] }}</span>
+                                    <span class="text-emerald-400 font-bold" x-text="creatorSubscribers">{{ $movie['creator']['subscribers'] }}</span>
                                 </div>
                             </div>
                         </a>
@@ -196,12 +231,15 @@
                             <span x-text="isFavorited ? 'In Favorites' : 'Add to Favorites'"></span>
                         </button>
 
-                        <button @click="isSubscribed = !isSubscribed"
-                                :class="isSubscribed ? 'bg-emerald-600/20 text-emerald-400 border-emerald-600/40' : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:text-white'"
-                                class="flex-1 py-3 px-4 rounded-xl border text-xs font-bold transition shadow-sm flex items-center justify-center gap-2">
-                            <span class="w-2 h-2 rounded-full" :class="isSubscribed ? 'bg-emerald-400' : 'bg-zinc-500'"></span>
-                            <span x-text="isSubscribed ? 'Subscribed to Creator' : 'Subscribe to Creator'"></span>
-                        </button>
+                        <form method="POST" action="{{ route('creators.toggle-subscription', $movie['creator']['id']) }}" @submit.prevent="toggleSubscribe()" class="flex-1">
+                            @csrf
+                            <button type="submit"
+                                    :class="isSubscribed ? 'bg-emerald-600/20 text-emerald-400 border-emerald-600/40' : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:text-white'"
+                                    class="w-full py-3 px-4 rounded-xl border text-xs font-bold transition shadow-sm flex items-center justify-center gap-2">
+                                <span class="w-2 h-2 rounded-full" :class="isSubscribed ? 'bg-emerald-400' : 'bg-zinc-500'"></span>
+                                <span x-text="isSubscribed ? 'Subscribed to Creator' : 'Subscribe to Creator'"></span>
+                            </button>
+                        </form>
                     </div>
                 </div>
 
@@ -230,11 +268,11 @@
                     <!-- Horizontal Scroll Carousel for Episodes (No Photos, Sleek Number & Text Cards) -->
                     <div x-ref="epContainer" class="flex gap-3 overflow-x-auto custom-scrollbar pt-1 pb-3 px-0.5">
                         @foreach($movie['episodes'] as $ep)
-                            <div @click="activeEpisode = {{ json_encode($ep) }}; isPlaying = true"
+                            <div @click="selectEpisode({{ json_encode($ep) }})"
                                  :class="activeEpisode.title === '{{ $ep['title'] }}'
                                      ? 'border-red-600/80 bg-red-600/10 shadow-lg shadow-red-600/10'
                                      : 'border-zinc-800 bg-zinc-900/80 hover:border-zinc-700 hover:bg-zinc-900'"
-                                 class="w-48 shrink-0 rounded-xl border p-3 cursor-pointer group transition duration-300 shadow-sm flex items-center gap-3">
+                                 class="w-52 shrink-0 rounded-xl border p-3 cursor-pointer group transition duration-300 shadow-sm flex items-center gap-3">
                                 <div :class="activeEpisode.title === '{{ $ep['title'] }}' ? 'bg-red-600 text-white shadow-md' : 'bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700 group-hover:text-white'"
                                      class="w-10 h-10 rounded-lg flex items-center justify-center font-black text-xs shrink-0 transition">
                                     {{ $ep['number'] }}
@@ -242,8 +280,20 @@
                                 <div class="min-w-0 flex-1">
                                     <h4 class="font-bold text-white text-xs truncate group-hover:text-red-400 transition">{{ $ep['title'] }}</h4>
                                     <div class="flex items-center justify-between text-[10px] text-zinc-400 mt-1">
-                                        <span class="font-mono">{{ $ep['duration'] }}</span>
-                                        <span x-show="activeEpisode.title === '{{ $ep['title'] }}'" class="text-[9px] font-bold text-red-400 uppercase tracking-wider">Playing</span>
+                                        @if(($ep['access_tier'] ?? 'free') === 'vip')
+                                            <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40 text-[9px]">VIP</span>
+                                        @elseif(($ep['access_tier'] ?? 'free') === 'pro')
+                                            <span class="px-1.5 py-0.2 rounded bg-red-600/20 text-red-400 font-bold border border-red-600/40 text-[9px]">PRO</span>
+                                        @else
+                                            <span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/40 text-[9px]">FREE</span>
+                                        @endif
+
+                                        <template x-if="!canAccess('{{ $ep['access_tier'] ?? 'free' }}')">
+                                            <span class="text-amber-400 font-bold flex items-center gap-0.5" title="Terkunci">🔒</span>
+                                        </template>
+                                        <template x-if="canAccess('{{ $ep['access_tier'] ?? 'free' }}') && activeEpisode.title === '{{ $ep['title'] }}'">
+                                            <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider">Playing</span>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
@@ -338,6 +388,35 @@
                             </div>
                         </template>
                     </div>
+                </div>
+            </div>
+        <!-- LOCKED EPISODE ACCESS MODAL OVERLAY -->
+        <div x-show="showLockModal" class="fixed inset-0 z-50 overflow-y-auto px-4 py-6 sm:px-0 flex items-center justify-center" style="display: none;">
+            <div @click="showLockModal = false" x-show="showLockModal" x-transition class="fixed inset-0 bg-zinc-950/85 backdrop-blur-md"></div>
+
+            <div x-show="showLockModal" x-transition class="bg-zinc-900 border border-amber-500/50 rounded-3xl p-6 sm:p-8 max-w-md w-full relative z-10 shadow-2xl space-y-6 text-center">
+                <div class="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto shadow-lg">
+                    <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                </div>
+
+                <div class="space-y-2">
+                    <span class="px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 font-mono text-[10px] font-bold uppercase tracking-widest border border-amber-500/30">
+                        AKSES TERKUNCI Tier <span x-text="lockedEpTier.toUpperCase()"></span>
+                    </span>
+                    <h3 class="text-xl font-black text-white tracking-tight">Episode Membutuhkan Keanggotaan Special</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">
+                        Kreator membatasi episode ini khusus untuk penonton paket <strong class="text-white uppercase" x-text="lockedEpTier"></strong>. Upgrade paket keanggotaan kamu untuk langsung membuka akses menonton!
+                    </p>
+                </div>
+
+                <div class="space-y-3 pt-2">
+                    <a href="{{ route('subscription.index') }}" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-zinc-950 font-black text-xs shadow-lg shadow-amber-500/20 transition transform active:scale-95 flex items-center justify-center gap-2">
+                        <span>Upgrade Membership Sekarang</span>
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                    </a>
+                    <button type="button" @click="showLockModal = false" class="w-full py-2.5 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition">
+                        Tutup
+                    </button>
                 </div>
             </div>
         </div>

@@ -65,7 +65,7 @@ test('creator user can add next week episode to existing movie', function () {
 
     $response = $this->actingAs($creator)->post("/creator/movies/{$movie->id}/episodes", [
         'title' => 'Ep 2: Pertempuran Dimulai (Minggu Ke-2)',
-        'duration' => '50m',
+        'access_tier' => 'pro',
         'video_url' => 'https://www.youtube.com/embed/test2',
     ]);
 

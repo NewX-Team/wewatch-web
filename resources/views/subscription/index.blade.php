@@ -105,9 +105,19 @@
                     </div>
 
                     <!-- CTA Button -->
-                    <button disabled class="w-full py-3 px-4 rounded-xl bg-zinc-800 text-zinc-500 font-bold text-xs cursor-default text-center border border-zinc-700/50">
-                        Paket Aktif Saat Ini
-                    </button>
+                    @if(Auth::user()->getEffectiveSubscriptionTier() === 'free')
+                        <button disabled class="w-full py-3 px-4 rounded-xl bg-zinc-800 text-zinc-500 font-bold text-xs cursor-default text-center border border-zinc-700/50">
+                            Paket Aktif Saat Ini
+                        </button>
+                    @else
+                        <form method="POST" action="{{ route('subscription.upgrade') }}">
+                            @csrf
+                            <input type="hidden" name="tier" value="free">
+                            <button type="submit" class="w-full py-3 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs text-center border border-zinc-700 transition">
+                                Downgrade ke Free
+                            </button>
+                        </form>
+                    @endif
                 </div>
 
 
@@ -160,9 +170,19 @@
                     </div>
 
                     <!-- CTA Button -->
-                    <button class="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-lg shadow-red-600/30 transition transform active:scale-95 text-center">
-                        Upgrade ke Pro Sekarang
-                    </button>
+                    @if(Auth::user()->getEffectiveSubscriptionTier() === 'pro')
+                        <button disabled class="w-full py-3.5 px-4 rounded-xl bg-red-600/30 text-red-300 font-bold text-xs cursor-default text-center border border-red-500/40">
+                            Paket Aktif Saat Ini (PRO)
+                        </button>
+                    @else
+                        <form method="POST" action="{{ route('subscription.upgrade') }}">
+                            @csrf
+                            <input type="hidden" name="tier" value="pro">
+                            <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-lg shadow-red-600/30 transition transform active:scale-95 text-center">
+                                Upgrade ke Pro Sekarang
+                            </button>
+                        </form>
+                    @endif
                 </div>
 
 
@@ -223,10 +243,20 @@
                     </div>
 
                     <!-- CTA Button (Glossy Gold) -->
-                    <button class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-zinc-950 font-black text-xs shadow-xl shadow-amber-500/20 transition transform active:scale-95 text-center flex items-center justify-center gap-2 relative z-10">
-                        <svg class="w-4 h-4 fill-current text-zinc-950" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
-                        <span>Upgrade ke VIP Luxury</span>
-                    </button>
+                    @if(Auth::user()->getEffectiveSubscriptionTier() === 'vip')
+                        <button disabled class="w-full py-3.5 px-4 rounded-xl bg-amber-500/30 text-amber-300 font-bold text-xs cursor-default text-center border border-amber-500/40 relative z-10">
+                            Paket Aktif Saat Ini (VIP MEWAH)
+                        </button>
+                    @else
+                        <form method="POST" action="{{ route('subscription.upgrade') }}" class="relative z-10">
+                            @csrf
+                            <input type="hidden" name="tier" value="vip">
+                            <button type="submit" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-zinc-950 font-black text-xs shadow-xl shadow-amber-500/20 transition transform active:scale-95 text-center flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 fill-current text-zinc-950" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
+                                <span>Upgrade ke VIP Luxury</span>
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
         </main>

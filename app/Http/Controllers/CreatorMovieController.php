@@ -23,6 +23,7 @@ class CreatorMovieController extends Controller
             'poster_url' => 'nullable|string',
             'banner_url' => 'nullable|string',
             'initial_episode_title' => 'nullable|string|max:255',
+            'initial_episode_access_tier' => 'nullable|in:free,pro,vip',
             'video_url' => 'nullable|string',
         ]);
 
@@ -45,18 +46,20 @@ class CreatorMovieController extends Controller
 
         // Create initial episode #1
         $episodeTitle = $request->input('initial_episode_title') ?: 'Episode 1: Perdana';
+        $episodeAccessTier = $request->input('initial_episode_access_tier') ?: $validated['access_tier'];
         $videoUrl = $request->input('video_url') ?: 'https://www.youtube.com/embed/dQw4w9WgXcQ';
 
         $movie->episodes()->create([
             'episode_number' => 1,
             'title' => $episodeTitle,
             'description' => 'Episode perdana film '.$movie->title,
-            'duration' => '45m',
+            'duration' => 'Auto',
+            'access_tier' => $episodeAccessTier,
             'video_url' => $videoUrl,
             'thumbnail_url' => $posterUrl,
         ]);
 
-        return back()->with('success', 'Film "'.$movie->title.'" berhasil diterbitkan! Episode 1 siap diakses penonton.');
+        return back()->with('success', 'Film "'.$movie->title.'" berhasil diterbitkan! Episode 1 (Akses '.strtoupper($episodeAccessTier).') siap diakses penonton.');
     }
 
     /**
@@ -70,22 +73,24 @@ class CreatorMovieController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'duration' => 'nullable|string|max:50',
+            'access_tier' => 'required|in:free,pro,vip',
             'video_url' => 'nullable|string',
         ]);
 
         $nextNum = $movie->episodes()->max('episode_number') + 1;
+        $accessTier = $validated['access_tier'];
 
         $movie->episodes()->create([
             'episode_number' => $nextNum,
             'title' => $validated['title'],
             'description' => 'Episode '.$nextNum.' dari serial '.$movie->title,
-            'duration' => $request->input('duration') ?: '45m',
+            'duration' => 'Auto',
+            'access_tier' => $accessTier,
             'video_url' => $request->input('video_url') ?: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
             'thumbnail_url' => $movie->poster_url,
         ]);
 
-        return back()->with('success', 'Episode #'.$nextNum.' ("'.$validated['title'].'") berhasil ditambahkan ke film '.$movie->title.'!');
+        return back()->with('success', 'Episode #'.$nextNum.' ("'.$validated['title'].'" - Tier '.strtoupper($accessTier).') berhasil ditambahkan ke film '.$movie->title.'!');
     }
 
     /**

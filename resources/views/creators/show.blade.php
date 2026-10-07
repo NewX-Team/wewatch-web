@@ -50,7 +50,24 @@
         <main class="pt-20 pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-8"
               x-data="{
                   activeTab: 'uploads',
-                  isSubscribed: false
+                  isSubscribed: {{ $creator['is_subscribed'] ? 'true' : 'false' }},
+                  subscribersCount: '{{ $creator['subscribers'] }}',
+                  toggleSubscribe() {
+                      fetch('{{ route('creators.toggle-subscription', $creator['id']) }}', {
+                          method: 'POST',
+                          headers: {
+                              'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                              'Accept': 'application/json'
+                          }
+                      })
+                      .then(res => res.json())
+                      .then(data => {
+                          if (data.success) {
+                              this.isSubscribed = data.subscribed;
+                              this.subscribersCount = data.subscribers_formatted;
+                          }
+                      });
+                  }
               }">
 
             <!-- YOUTUBE CHANNEL HEADER BANNER -->
@@ -85,7 +102,7 @@
                         <div class="flex flex-wrap items-center gap-3 text-xs font-mono text-zinc-400">
                             <span class="font-bold text-zinc-200">{{ $creator['handle'] }}</span>
                             <span>•</span>
-                            <span class="text-emerald-400 font-bold">{{ $creator['subscribers'] }}</span>
+                            <span class="text-emerald-400 font-bold" x-text="subscribersCount">{{ $creator['subscribers'] }}</span>
                             <span>•</span>
                             <span>{{ $creator['uploads_count'] }} Film Diterbitkan</span>
                         </div>
@@ -104,14 +121,17 @@
                             <span>Buka Creator Studio</span>
                         </a>
                     @else
-                        <button @click="isSubscribed = !isSubscribed"
-                                :class="isSubscribed
-                                    ? 'bg-zinc-800 text-zinc-200 border-zinc-700 hover:bg-zinc-700'
-                                    : 'bg-red-600 hover:bg-red-500 text-white border-red-500/50 shadow-lg shadow-red-600/20'"
-                                class="px-6 py-2.5 rounded-xl border text-xs font-extrabold tracking-wider uppercase transition transform active:scale-95 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full" :class="isSubscribed ? 'bg-emerald-400' : 'bg-white animate-pulse'"></span>
-                            <span x-text="isSubscribed ? 'SUBSCRIBED' : 'SUBSCRIBE'"></span>
-                        </button>
+                        <form method="POST" action="{{ route('creators.toggle-subscription', $creator['id']) }}" @submit.prevent="toggleSubscribe()">
+                            @csrf
+                            <button type="submit"
+                                    :class="isSubscribed
+                                        ? 'bg-zinc-800 text-zinc-200 border-zinc-700 hover:bg-zinc-700'
+                                        : 'bg-red-600 hover:bg-red-500 text-white border-red-500/50 shadow-lg shadow-red-600/20'"
+                                    class="px-6 py-2.5 rounded-xl border text-xs font-extrabold tracking-wider uppercase transition transform active:scale-95 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full" :class="isSubscribed ? 'bg-emerald-400' : 'bg-white animate-pulse'"></span>
+                                <span x-text="isSubscribed ? 'SUBSCRIBED' : 'SUBSCRIBE'"></span>
+                            </button>
+                        </form>
                     @endif
 
                     <button class="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition shadow" title="Bagikan Channel">

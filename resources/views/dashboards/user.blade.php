@@ -52,8 +52,8 @@
                     <a href="{{ route('favorites.index') }}" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition">
                         Favorites
                     </a>
-                    <a href="#" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition flex items-center gap-1.5">
-                        <span>Subscribed</span>
+                    <a href="{{ route('user.subscriptions') }}" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition flex items-center gap-1.5">
+                        <span>Subscribed ({{ Auth::user()->subscribedCreators()->count() }})</span>
                     </a>
                 </div>
             </div>
@@ -231,6 +231,7 @@
                     </div>
                 </section>
             @endif
+
 
         </main>
     </body>
