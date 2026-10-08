@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'subscription_tier', 'is_suspended', 'is_root_admin', 'is_verified', 'handle', 'bio', 'avatar_url', 'banner_url', 'tagline'])]
+#[Fillable(['name', 'email', 'password', 'role', 'subscription_tier', 'dm_access_tier', 'is_suspended', 'is_root_admin', 'is_verified', 'handle', 'bio', 'avatar_url', 'banner_url', 'tagline'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -204,5 +204,61 @@ class User extends Authenticatable
         $result = $this->favoriteMovies()->toggle($movieId);
 
         return count($result['attached']) > 0;
+    }
+
+    /**
+     * Check if user can send message to admin team. Only VIP tier or Creator/SuperAdmin.
+     */
+    public function canMessageAdmin(): bool
+    {
+        return $this->isSuperAdmin() || $this->isCreator() || $this->getEffectiveSubscriptionTier() === 'vip';
+    }
+
+    /**
+     * Check if creator can receive DM from target sender user based on creator's dm_access_tier.
+     */
+    public function canReceiveDmFrom(User $sender): bool
+    {
+        if ($sender->id === $this->id || $sender->isSuperAdmin()) {
+            return true;
+        }
+
+        $tierSetting = strtolower($this->dm_access_tier ?: 'pro');
+
+        if ($tierSetting === 'none') {
+            return false;
+        }
+
+        if ($tierSetting === 'free') {
+            return true;
+        }
+
+        $senderTier = $sender->getEffectiveSubscriptionTier();
+
+        if ($tierSetting === 'pro') {
+            return in_array($senderTier, ['pro', 'vip']);
+        }
+
+        if ($tierSetting === 'vip') {
+            return $senderTier === 'vip';
+        }
+
+        return true;
+    }
+
+    /**
+     * Messages sent by this user.
+     */
+    public function sentMessages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    /**
+     * Messages received by this user.
+     */
+    public function receivedMessages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
     }
 }
