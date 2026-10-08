@@ -7,6 +7,7 @@ use App\Http\Controllers\CreatorMovieController;
 use App\Http\Controllers\CreatorSubscriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MovieController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
@@ -53,6 +54,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/creators/{user}/toggle-subscription', [CreatorSubscriptionController::class, 'toggle'])->name('creators.toggle-subscription');
     Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
     Route::post('/subscription/upgrade', [SubscriptionController::class, 'upgrade'])->name('subscription.upgrade');
+
+    // Direct Messaging Routes
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::post('/messages/send', [MessageController::class, 'store'])->name('messages.store');
+    Route::post('/creator/settings/dm-tier', [CreatorController::class, 'updateDmTier'])->name('creator.settings.dm-tier');
 });
 
 Route::middleware('auth')->group(function () {
