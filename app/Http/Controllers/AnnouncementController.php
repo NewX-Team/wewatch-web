@@ -5,9 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class AnnouncementController extends Controller
 {
+    /**
+     * Display the announcements and notifications feed for users.
+     */
+    public function userAnnouncements(Request $request): View
+    {
+        $userRole = auth()->user()?->role?->value ?? 'user';
+
+        $announcements = Announcement::where('is_active', true)
+            ->where(function ($query) use ($userRole) {
+                $query->where('target_role', 'all')
+                    ->orWhere('target_role', $userRole);
+            })
+            ->latest()
+            ->get();
+
+        return view('announcements.user-index', compact('announcements'));
+    }
+
     /**
      * Store a newly created announcement.
      */
