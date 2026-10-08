@@ -130,11 +130,44 @@
                 </div>
 
                 <div class="flex items-center gap-3 shrink-0">
+                    <a href="{{ route('messages.index') }}" class="py-3 px-4 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-red-600/50 font-extrabold text-xs transition shadow flex items-center gap-2">
+                        <svg class="w-4 h-4 fill-current text-red-500" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                        <span>Buka Direct Messages</span>
+                    </a>
                     <button @click="showUploadModal = true" class="py-3 px-5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-lg shadow-red-600/30 transition transform active:scale-95 flex items-center gap-2">
                         <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
                         <span>+ Terbitkan Film / Serial Baru</span>
                     </button>
                 </div>
+            </div>
+
+            <!-- Settings Widget: Direct Message Access Tier -->
+            <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg backdrop-blur-xl">
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 fill-current text-red-500" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                        <h3 class="font-extrabold text-white text-xs">Pengaturan Izin Direct Message (DM) Channel</h3>
+                    </div>
+                    <span class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded bg-zinc-950 text-red-400 border border-zinc-800 uppercase">
+                        IZIN SAAT INI: {{ strtoupper(Auth::user()->dm_access_tier ?: 'PRO') }}
+                    </span>
+                </div>
+
+                <form method="POST" action="{{ route('creator.settings.dm-tier') }}" class="flex flex-col sm:flex-row items-center gap-3">
+                    @csrf
+                    <div class="flex-1 w-full">
+                        <select name="dm_access_tier" class="w-full py-2.5 px-3.5 text-xs rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-red-600 font-bold cursor-pointer">
+                            <option value="free" {{ (Auth::user()->dm_access_tier === 'free') ? 'selected' : '' }}>Semua Pengguna (Free, PRO & VIP)</option>
+                            <option value="pro" {{ (Auth::user()->dm_access_tier === 'pro' || !Auth::user()->dm_access_tier) ? 'selected' : '' }}>Pengguna PRO & VIP (Default)</option>
+                            <option value="vip" {{ (Auth::user()->dm_access_tier === 'vip') ? 'selected' : '' }}>Khusus Pengguna VIP Sahaja</option>
+                            <option value="none" {{ (Auth::user()->dm_access_tier === 'none') ? 'selected' : '' }}>Nonaktifkan Direct Message (Tutup Pesan)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs transition shadow-md shrink-0">
+                        Simpan Izin DM
+                    </button>
+                </form>
             </div>
 
             <!-- CREATOR METRICS ANALYTICS GRID (4 CARDS) -->

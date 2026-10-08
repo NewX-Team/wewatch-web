@@ -150,6 +150,12 @@
                                 </template>
                             </button>
                         </form>
+
+                        <a href="{{ route('messages.index', ['type' => 'creator', 'creator_id' => $creator['id']]) }}"
+                           class="py-2.5 px-4 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-red-600/50 transition shadow-lg flex items-center gap-1.5 font-extrabold text-xs shrink-0" title="Kirim Direct Message ke Kreator">
+                            <svg class="w-4 h-4 fill-current text-red-500" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                            <span>Direct Message</span>
+                        </a>
                     @endif
 
                     <button class="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white transition shadow" title="Bagikan Channel">
