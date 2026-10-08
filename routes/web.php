@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/user/dashboard', [DashboardController::class, 'user'])->name('user.dashboard');
         Route::get('/user/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
         Route::get('/user/subscriptions', [SubscriptionController::class, 'userSubscriptions'])->name('user.subscriptions');
+        Route::get('/user/announcements', [AnnouncementController::class, 'userAnnouncements'])->name('user.announcements');
     });
 
     Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show');
