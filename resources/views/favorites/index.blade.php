@@ -126,8 +126,17 @@
                     </div>
                 </div>
 
-                <!-- Right: Tier Badge Box & Profile -->
+                <!-- Right: Tier Badge Box, Bell Icon & Profile -->
                 <div class="flex items-center space-x-3 shrink-0">
+                    <!-- Notification Bell Button -->
+                    <a href="{{ route('user.announcements') }}" title="Pemberitahuan & Pengumuman Admin" class="p-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-red-600/60 text-zinc-300 hover:text-white transition relative group">
+                        <svg class="w-4 h-4 fill-current group-hover:rotate-12 transition duration-300" viewBox="0 0 24 24">
+                            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                        </svg>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-600 border-2 border-zinc-950 animate-ping"></span>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-600 border-2 border-zinc-950"></span>
+                    </a>
+
                     <a href="{{ route('subscription.index') }}" title="Upgrade Membership Plan" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-red-600/60 transition shadow-inner group cursor-pointer">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span class="text-[11px] font-black tracking-wider uppercase text-zinc-200 group-hover:text-red-400 transition">{{ strtoupper(Auth::user()->getEffectiveSubscriptionTier()) }}</span>

@@ -38,11 +38,22 @@
                 </a>
             </div>
 
-            <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-black text-sm text-white tracking-tighter shadow-md">
-                    W
+            <div class="flex items-center gap-3">
+                <!-- Notification Bell Button -->
+                <a href="{{ route('user.announcements') }}" title="Pemberitahuan & Pengumuman Admin" class="p-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-red-600/60 text-zinc-300 hover:text-white transition relative group">
+                    <svg class="w-4 h-4 fill-current group-hover:rotate-12 transition duration-300" viewBox="0 0 24 24">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                    </svg>
+                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-600 border-2 border-zinc-950 animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-600 border-2 border-zinc-950"></span>
+                </a>
+
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center font-black text-sm text-white tracking-tighter shadow-md">
+                        W
+                    </div>
+                    <span class="font-black text-base tracking-tight text-white hidden sm:inline">WEWATCH PREMIUM</span>
                 </div>
-                <span class="font-black text-base tracking-tight text-white hidden sm:inline">WEWATCH PREMIUM</span>
             </div>
         </nav>
 
