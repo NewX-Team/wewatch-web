@@ -3,12 +3,39 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CreatorController extends Controller
 {
+    /**
+     * Update creator's DM access permission tier setting.
+     */
+    public function updateDmTier(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'dm_access_tier' => ['required', 'string', 'in:free,pro,vip,none'],
+        ]);
+
+        $user = $request->user();
+        $user->update([
+            'dm_access_tier' => strtolower($validated['dm_access_tier']),
+        ]);
+
+        $tierLabels = [
+            'free' => 'Semua Pengguna (Free, PRO & VIP)',
+            'pro' => 'Pengguna PRO & VIP',
+            'vip' => 'Khusus Pengguna VIP',
+            'none' => 'Nonaktif (Tidak menerima Pesan)',
+        ];
+
+        $label = $tierLabels[$validated['dm_access_tier']] ?? 'terbaru';
+
+        return redirect()->back()->with('success', "Pengaturan DM berhasil diperbarui. Izin kirim pesan diset ke: {$label}.");
+    }
+
     /**
      * Display the specified creator channel page using real database data.
      */
