@@ -55,11 +55,23 @@
                     <a href="{{ route('user.subscriptions') }}" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition flex items-center gap-1.5">
                         <span>Subscribed ({{ Auth::user()->subscribedCreators()->count() }})</span>
                     </a>
+                    <a href="{{ route('user.announcements') }}" class="px-3 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 fill-current text-amber-400 animate-pulse" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                        <span>Pengumuman</span>
+                    </a>
                 </div>
             </div>
 
-            <!-- Right: Tier Badge Box, Searchbar & Profile -->
+            <!-- Right: Tier Badge Box, Bell Icon, Searchbar & Profile -->
             <div class="flex items-center space-x-3 shrink-0">
+                <!-- Notification Bell Button -->
+                <a href="{{ route('user.announcements') }}" title="Pemberitahuan & Pengumuman Admin" class="p-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-red-600/60 text-zinc-300 hover:text-white transition relative group">
+                    <svg class="w-4 h-4 fill-current group-hover:rotate-12 transition duration-300" viewBox="0 0 24 24">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                    </svg>
+                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-600 border-2 border-zinc-950 animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-600 border-2 border-zinc-950"></span>
+                </a>
                 <!-- Account Tier Box (Clickable to Upgrade Membership Page) -->
                 <a href="{{ route('subscription.index') }}" title="Upgrade Membership Plan" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-red-600/60 transition shadow-inner group cursor-pointer">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
