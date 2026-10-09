@@ -207,42 +207,20 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user can send message to admin team. Only VIP tier or Creator/SuperAdmin.
+     * Check if user can send message to admin team.
+     * Temporarily open to all users as requested.
      */
     public function canMessageAdmin(): bool
     {
-        return $this->isSuperAdmin() || $this->isCreator() || $this->getEffectiveSubscriptionTier() === 'vip';
+        return true;
     }
 
     /**
-     * Check if creator can receive DM from target sender user based on creator's dm_access_tier.
+     * Check if creator can receive DM from target sender user.
+     * Temporarily open to all users as requested.
      */
     public function canReceiveDmFrom(User $sender): bool
     {
-        if ($sender->id === $this->id || $sender->isSuperAdmin()) {
-            return true;
-        }
-
-        $tierSetting = strtolower($this->dm_access_tier ?: 'pro');
-
-        if ($tierSetting === 'none') {
-            return false;
-        }
-
-        if ($tierSetting === 'free') {
-            return true;
-        }
-
-        $senderTier = $sender->getEffectiveSubscriptionTier();
-
-        if ($tierSetting === 'pro') {
-            return in_array($senderTier, ['pro', 'vip']);
-        }
-
-        if ($tierSetting === 'vip') {
-            return $senderTier === 'vip';
-        }
-
         return true;
     }
 
