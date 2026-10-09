@@ -8,7 +8,7 @@ test('unauthenticated user is redirected when accessing messages hub', function 
     $response->assertRedirect('/login');
 });
 
-test('free user cannot message admin support team', function () {
+test('all users including free user can message admin support team during open tier preview', function () {
     $freeUser = User::factory()->user()->create(['subscription_tier' => 'free']);
 
     $response = $this->actingAs($freeUser)
@@ -17,9 +17,9 @@ test('free user cannot message admin support team', function () {
             'is_admin_chat' => true,
         ]);
 
-    $response->assertStatus(403);
+    $response->assertStatus(200);
     $response->assertJson([
-        'status' => 'error',
+        'status' => 'success',
     ]);
 });
 
@@ -40,22 +40,22 @@ test('vip user can message admin support team', function () {
     expect(Message::where('sender_id', $vipUser->id)->where('is_admin_chat', true)->exists())->toBeTrue();
 });
 
-test('creator can configure dm access tier and permission rules apply correctly', function () {
+test('all users can message creator during open tier preview', function () {
     $creator = User::factory()->creator()->create(['dm_access_tier' => 'pro']);
     $freeUser = User::factory()->user()->create(['subscription_tier' => 'free']);
     $proUser = User::factory()->user()->create(['subscription_tier' => 'pro']);
     $vipUser = User::factory()->user()->create(['subscription_tier' => 'vip']);
 
-    // 1. Free user tries to DM creator requiring PRO -> blocked (403)
+    // 1. Free user tries to DM creator -> success (200) during open tier preview
     $response1 = $this->actingAs($freeUser)
         ->postJson('/messages/send', [
             'receiver_id' => $creator->id,
             'message' => 'Halo kreator!',
         ]);
 
-    $response1->assertStatus(403);
+    $response1->assertStatus(200);
 
-    // 2. Pro user tries to DM creator requiring PRO -> success (200)
+    // 2. Pro user tries to DM creator -> success (200)
     $response2 = $this->actingAs($proUser)
         ->postJson('/messages/send', [
             'receiver_id' => $creator->id,
