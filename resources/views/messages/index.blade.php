@@ -180,8 +180,7 @@
 
                             <!-- OFFICIAL ADMIN SUPPORT TEAM THREAD -->
                             <a href="{{ route('messages.index', ['type' => 'admin']) }}"
-                               :class="('{{ $activeType }}' === 'admin' && !'{{ $activeUserId }}') ? 'bg-red-600/15 border-red-600/50 text-white shadow-lg' : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:bg-zinc-900 hover:border-zinc-700'"
-                               class="p-3.5 rounded-2xl border block transition group relative overflow-hidden">
+                               class="p-3.5 rounded-2xl border block transition group relative overflow-hidden {{ ($activeType === 'admin' && !($activeUserId ?? null)) ? 'bg-red-600/15 border-red-600/50 text-white shadow-lg' : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:bg-zinc-900 hover:border-zinc-700' }}">
 
                                 <div class="flex items-center gap-3">
                                     <!-- Official Admin Avatar Emblem -->
@@ -198,29 +197,25 @@
                                                 <span>Official Support Admin</span>
                                             </h4>
                                             <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 uppercase font-mono">
-                                                VIP ADMIN
+                                                ADMIN
                                             </span>
                                         </div>
                                         <p class="text-[11px] text-zinc-400 truncate mt-0.5">
-                                            @if(!$hasAdminChat)
-                                                <span class="text-amber-400 font-bold">Khusus Anggota VIP (Locked)</span>
-                                            @else
-                                                <span>Layanan Bantuan & Support Prioritas 24/7</span>
-                                            @endif
+                                            <span>Layanan Bantuan & Support Direct Message</span>
                                         </p>
                                     </div>
                                 </div>
                             </a>
 
-                            <!-- SUPERADMIN VIEW: VIP USER SUPPORT TICKETS LIST -->
+                            <!-- SUPERADMIN VIEW: USER SUPPORT TICKETS LIST -->
                             @if(Auth::user()->isSuperAdmin() && isset($adminThreads) && $adminThreads->isNotEmpty())
                                 <div class="pt-3 pb-1 border-t border-zinc-800/80">
-                                    <span class="text-[10px] font-mono font-bold text-red-400 uppercase tracking-wider px-2">Tiket Support User VIP (Admin View)</span>
+                                    <span class="text-[10px] font-mono font-bold text-red-400 uppercase tracking-wider px-2">Tiket Support User (Admin View)</span>
                                 </div>
 
                                 @foreach($adminThreads as $uThread)
                                     <a href="{{ route('messages.index', ['type' => 'admin', 'user_id' => $uThread->id]) }}"
-                                       class="p-3.5 rounded-2xl border block transition group {{ ($activeUserId == $uThread->id) ? 'bg-red-600/15 border-red-600/50 text-white' : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:bg-zinc-900' }}">
+                                       class="p-3.5 rounded-2xl border block transition group {{ (($activeUserId ?? null) == $uThread->id) ? 'bg-red-600/15 border-red-600/50 text-white shadow-lg' : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:bg-zinc-900' }}">
                                         <div class="flex items-center gap-3">
                                             <div class="w-9 h-9 rounded-full bg-zinc-800 text-white font-bold text-xs flex items-center justify-center shrink-0 border border-zinc-700">
                                                 {{ strtoupper(substr($uThread->name, 0, 1)) }}
@@ -243,8 +238,7 @@
                             @if($creatorsList->isNotEmpty())
                                 @foreach($creatorsList as $cItem)
                                     <a href="{{ route('messages.index', ['type' => 'creator', 'creator_id' => $cItem->id]) }}"
-                                       :class="('{{ $activeCreator ? $activeCreator->id : 0 }}' == '{{ $cItem->id }}') ? 'bg-red-600/15 border-red-600/50 text-white shadow-lg' : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:bg-zinc-900 hover:border-zinc-700'"
-                                       class="p-3.5 rounded-2xl border block transition group">
+                                       class="p-3.5 rounded-2xl border block transition group {{ ($activeCreator && $activeCreator->id == $cItem->id) ? 'bg-red-600/15 border-red-600/50 text-white shadow-lg' : 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300 hover:bg-zinc-900 hover:border-zinc-700' }}">
 
                                         <div class="flex items-center gap-3">
                                             <div class="w-10 h-10 rounded-full bg-red-600 border-2 border-zinc-950 shadow flex items-center justify-center shrink-0 overflow-hidden text-white font-black text-sm">
