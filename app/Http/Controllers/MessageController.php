@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -21,9 +22,10 @@ class MessageController extends Controller
 
         // 1. Fetch conversations list for sidebar
         $conversations = collect();
+        $adminThreads = collect();
 
         // Official Admin Support Thread
-        $hasAdminChat = $user->canMessageAdmin();
+        $hasAdminChat = true;
         $adminUnreadCount = 0;
         $lastAdminMsg = null;
 
@@ -52,8 +54,11 @@ class MessageController extends Controller
                 ->count();
         }
 
-        // Subscribed creators for user or subscribers for creator
-        $creatorsList = $user->subscribedCreators()->with('subscribers')->get();
+        // Creators list for sidebar (All registered creators + subscribed creators)
+        $allCreators = User::where('role', UserRole::Creator)->where('users.id', '!=', $user->id)->get();
+        $subscribedCreators = $user->subscribedCreators()->where('users.id', '!=', $user->id)->get();
+        $creatorsList = $allCreators->merge($subscribedCreators)->unique('id');
+
         if ($user->isCreator()) {
             $subscribersList = $user->subscribers()->get();
             $creatorsList = $creatorsList->merge($subscribersList)->unique('id');
@@ -71,53 +76,42 @@ class MessageController extends Controller
         $lockReason = null;
 
         if ($activeType === 'admin') {
-            if (! $user->canMessageAdmin()) {
-                $canSendMessage = false;
-                $lockReason = 'Pesan langsung ke Tim Support Admin hanya dapat diakses oleh Anggota VIP.';
-            } else {
-                if ($user->isSuperAdmin() && $activeUserId) {
-                    $activeUser = User::find($activeUserId);
-                    if ($activeUser) {
-                        $activeMessages = Message::where('is_admin_chat', true)
-                            ->where(function ($q) use ($activeUser) {
-                                $q->where('sender_id', $activeUser->id)
-                                    ->orWhere('receiver_id', $activeUser->id);
-                            })
-                            ->orderBy('created_at', 'asc')
-                            ->get();
-
-                        // Mark as read
-                        Message::where('is_admin_chat', true)
-                            ->where('sender_id', $activeUser->id)
-                            ->where('is_read', false)
-                            ->update(['is_read' => true]);
-                    }
-                } else {
-                    // Regular user messaging Admin
+            if ($user->isSuperAdmin() && $activeUserId) {
+                $activeUser = User::find($activeUserId);
+                if ($activeUser) {
                     $activeMessages = Message::where('is_admin_chat', true)
-                        ->where(function ($q) use ($user) {
-                            $q->where('sender_id', $user->id)
-                                ->orWhere('receiver_id', $user->id);
+                        ->where(function ($q) use ($activeUser) {
+                            $q->where('sender_id', $activeUser->id)
+                                ->orWhere('receiver_id', $activeUser->id);
                         })
                         ->orderBy('created_at', 'asc')
                         ->get();
 
                     // Mark as read
                     Message::where('is_admin_chat', true)
-                        ->where('receiver_id', $user->id)
+                        ->where('sender_id', $activeUser->id)
                         ->where('is_read', false)
                         ->update(['is_read' => true]);
                 }
+            } else {
+                // Regular user messaging Admin
+                $activeMessages = Message::where('is_admin_chat', true)
+                    ->where(function ($q) use ($user) {
+                        $q->where('sender_id', $user->id)
+                            ->orWhere('receiver_id', $user->id);
+                    })
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+
+                // Mark as read
+                Message::where('is_admin_chat', true)
+                    ->where('receiver_id', $user->id)
+                    ->where('is_read', false)
+                    ->update(['is_read' => true]);
             }
         } elseif ($activeCreatorId) {
             $activeCreator = User::find($activeCreatorId);
             if ($activeCreator) {
-                if (! $activeCreator->canReceiveDmFrom($user)) {
-                    $canSendMessage = false;
-                    $requiredTier = strtoupper($activeCreator->dm_access_tier ?: 'PRO');
-                    $lockReason = "Kreator '{$activeCreator->name}' membatasi Direct Message khusus untuk pengguna berstatus {$requiredTier}.";
-                }
-
                 $activeMessages = Message::where('is_admin_chat', false)
                     ->where(function ($q) use ($user, $activeCreator) {
                         $q->where(function ($q1) use ($user, $activeCreator) {
@@ -147,6 +141,7 @@ class MessageController extends Controller
             'activeType',
             'activeCreator',
             'activeUser',
+            'activeUserId',
             'activeMessages',
             'canSendMessage',
             'lockReason'
@@ -169,18 +164,6 @@ class MessageController extends Controller
         $receiverId = $validated['receiver_id'] ?? null;
 
         if ($isAdminChat) {
-            // Validate Admin chat permissions
-            if (! $sender->canMessageAdmin()) {
-                if ($request->wantsJson()) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Hanya pengguna VIP yang dapat mengirim pesan ke Tim Admin Support.',
-                    ], 403);
-                }
-
-                return redirect()->back()->with('error', 'Hanya pengguna VIP yang dapat mengirim pesan ke Tim Admin Support.');
-            }
-
             // If superadmin is replying to a specific user
             if ($sender->isSuperAdmin() && $receiverId) {
                 $msg = Message::create([
@@ -201,22 +184,11 @@ class MessageController extends Controller
                 ]);
             }
         } else {
-            // User to Creator chat validation
             if (! $receiverId) {
                 return redirect()->back()->with('error', 'Penerima pesan tidak valid.');
             }
 
             $receiver = User::findOrFail($receiverId);
-            if (! $receiver->canReceiveDmFrom($sender)) {
-                $requiredTier = strtoupper($receiver->dm_access_tier ?: 'PRO');
-                $errorMsg = "Kreator '{$receiver->name}' membatasi pesan khusus pengguna berstatus {$requiredTier}.";
-
-                if ($request->wantsJson()) {
-                    return response()->json(['status' => 'error', 'message' => $errorMsg], 403);
-                }
-
-                return redirect()->back()->with('error', $errorMsg);
-            }
 
             $msg = Message::create([
                 'sender_id' => $sender->id,
